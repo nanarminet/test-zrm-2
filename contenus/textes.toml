@@ -22,7 +22,7 @@ progression = "Étape {numero} sur {total} : {titre}"
 reessayer = "Réessayer"
 attente = "Un instant, nous préparons vos propositions…"
 attente_verification = "Un instant, nous relisons votre motto…"
-attente_lecture = "Un instant, nous lisons votre souhait…"
+attente_lecture = "Un instant, nous lisons votre texte…"
 detail_technique = "Détail technique de l'erreur"
 info_technique = "Informations techniques"
 

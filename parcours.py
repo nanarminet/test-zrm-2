@@ -90,7 +90,7 @@ def _defauts() -> dict:
          "motto": "", "res_verdict": None, "version_amelio": 0,
          "res_aide": None, "sig_aide": None, "res_mouv": None, "sig_mouv": None,
          "w_raisons": "", "w_reflexion": "",
-         "w_souhait": "", "w_motto_saisie": "", "souhait_lu": ""}
+         "w_souhait": "", "w_motto_saisie": "", "lu_souhait": "", "lu_raisons_image": ""}
     for i in range(NB_LIBRES):
         d[f"w_mots_libres_{i}"] = ""
         d[f"w_libre_aide_{i}"] = ""
@@ -350,12 +350,39 @@ def ecran_choix_image() -> None:
     nav(suivant=bool(S.image_id))
 
 
+def lire_puis_avancer(champ: str, texte: str) -> None:
+    """L'IA lit le texte libre (détresse) avant de passer à l'écran suivant.
+
+    Un appel par texte différent. Si une détresse est repérée (modèle ou mots-clés), le message s'affiche
+    sur l'écran et on y reste ; un nouveau clic avec le même texte laisse continuer.
+    """
+    if S[f"lu_{champ}"] != texte:
+        res, erreur = appel(G["attente_lecture"], activites.lire_saisie, champ=champ, texte=texte)
+        if res is None:
+            erreur_ia(erreur)
+            return
+        S[f"lu_{champ}"] = texte
+        if res.detresse:
+            st.rerun()
+    avancer()
+    st.rerun()
+
+
 def ecran_raisons_image() -> None:
     titre("raisons_image")
     image_choisie(320)
     md("raisons_image")
     st.text_area(C["raisons_image"]["champ"], key="w_raisons", max_chars=1000)
-    nav()
+    afficher_detresse()
+
+    def suivant() -> None:
+        texte = S.w_raisons.strip()
+        if texte:
+            lire_puis_avancer("raisons_image", texte)
+        else:                                  # rien à lire : on avance
+            avancer()
+            st.rerun()
+    nav(sur_suivant=suivant)
 
 
 def ecran_mots() -> None:
@@ -425,16 +452,7 @@ def ecran_souhait() -> None:
         if not texte:
             st.warning(c["erreur_vide"])
             return
-        if S.souhait_lu != texte:            # l'IA lit le souhait (détresse) ; relancée seulement si le texte change
-            res, erreur = appel(G["attente_lecture"], activites.lire_souhait, souhait=texte)
-            if res is None:
-                erreur_ia(erreur)
-                return
-            S.souhait_lu = texte
-            if res.detresse:                 # même message que pour le motto, affiché en haut de l'écran :
-                st.rerun()                   # on reste ici ; le clic suivant (même texte) fait avancer
-        avancer()
-        st.rerun()
+        lire_puis_avancer("souhait", texte)
     afficher_detresse()
     nav(sur_suivant=suivant)
 

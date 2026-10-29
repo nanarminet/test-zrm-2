@@ -1,4 +1,4 @@
-"""Les 5 activités IA (lecture du souhait, phrases du motto, vérification, aide-mémoire, mouvements) : appel au modèle + contrôles en code + une relance corrective.
+"""Les 5 activités IA (lecture des textes libres, phrases du motto, vérification, aide-mémoire, mouvements) : appel au modèle + contrôles en code + une relance corrective.
 
 Chaque activité renvoie un `ResultatActivite` :
   - `donnees`  : ce que l'interface affiche ;
@@ -28,7 +28,7 @@ MAX_IMAGE_SIDE = 1024     # px : l'image est réduite avant envoi (comme dans le
 
 # Nom du contrat JSON (schemas.py) -> fichier de prompt (prompts/*.md)
 FICHIER_PROMPT = {"propositions_motto": "motto_propositions", "verification_motto": "motto_verification",
-                  "aide_memoire": "aide_memoire", "mouvements": "mouvements", "lecture_souhait": "souhait_lecture"}
+                  "aide_memoire": "aide_memoire", "mouvements": "mouvements", "lecture_saisie": "saisie_lecture"}
 
 
 @dataclass
@@ -135,16 +135,21 @@ def _detresse(reponse: llm.Reponse, *saisies: str) -> bool:
 
 
 # --------------------------------------------------------------------------------------
-# 0. Lecture du souhait : repérer une détresse (aucun contenu généré)
+# 0. Lecture d'un texte libre (souhait, raisons du choix d'image) : repérer une détresse
 # --------------------------------------------------------------------------------------
-def lire_souhait(config: llm.Config, *, souhait: str) -> ResultatActivite:
-    """Le modèle lit le souhait et ne renvoie que le drapeau de détresse (le code ajoute son filet de mots-clés)."""
+CHAMPS_LUS = ("souhait", "raisons_image")
+
+
+def lire_saisie(config: llm.Config, *, champ: str, texte: str) -> ResultatActivite:
+    """Le modèle lit le texte et ne renvoie que le drapeau de détresse (le code ajoute son filet de mots-clés)."""
+    if champ not in CHAMPS_LUS:
+        raise ValueError(f"champ inconnu : {champ}")
     journal: list[dict] = []
-    user = llm.message_utilisateur(prompts.formater_saisies(souhait=souhait)
-                                   + "\nLis ce souhait et renseigne uniquement `detresse` (JSON uniquement).")
-    rep, alertes = _executer(config, activite="lecture_souhait", user_msg=user, evaluer=lambda d: ([], []),
+    user = llm.message_utilisateur(prompts.formater_saisies(**{champ: texte})
+                                   + "\nLis ce texte et renseigne uniquement `detresse` (JSON uniquement).")
+    rep, alertes = _executer(config, activite="lecture_saisie", user_msg=user, evaluer=lambda d: ([], []),
                              temperature=0.0, max_tokens=300, journal=journal)
-    return ResultatActivite("lecture_souhait", {}, _detresse(rep, souhait), alertes, journal)
+    return ResultatActivite("lecture_saisie", {}, _detresse(rep, texte), alertes, journal)
 
 
 # --------------------------------------------------------------------------------------

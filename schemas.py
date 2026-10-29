@@ -73,7 +73,7 @@ SCHEMAS = {
         "detresse": _BOOL}),
     "aide_memoire": _objet({"fixes": _idees(), "mobiles": _idees(), "detresse": _BOOL}),
     "mouvements": _objet({"macro": _chaines(), "micro": _chaines(), "detresse": _BOOL}),
-    "lecture_souhait": _objet({"detresse": _BOOL}),
+    "lecture_saisie": _objet({"detresse": _BOOL}),
 }
 
 
@@ -139,6 +139,6 @@ def valider(nom: str, donnees) -> list[str]:
     elif nom == "mouvements":
         _liste_de_textes(donnees.get("macro"), "macro", NB_MOUVEMENTS, p)
         _liste_de_textes(donnees.get("micro"), "micro", NB_MOUVEMENTS, p)
-    elif nom != "lecture_souhait":       # ce contrat ne contient que « detresse », déjà contrôlé plus haut
+    elif nom != "lecture_saisie":       # ce contrat ne contient que « detresse », déjà contrôlé plus haut
         p.append(f"contrat inconnu : {nom}")
     return p

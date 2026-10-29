@@ -46,7 +46,7 @@ _DONNEES = {
                     {"idee": "un fond d'écran du paysage sur le téléphone", "categorie": "objet"},
                     {"idee": "la sonnerie du téléphone remplacée par un chant d'oiseau", "categorie": "musique"}],
         "detresse": False},
-    "lecture_souhait": {"detresse": False},
+    "lecture_saisie": {"detresse": False},
     "mouvements": {
         "macro": ["ouvrir grand les bras comme des ailes", "tourner lentement le haut du corps",
                   "lever les bras au-dessus de la tête en respirant"],

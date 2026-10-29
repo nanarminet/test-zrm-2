@@ -621,8 +621,8 @@ def jusqu_au_souhait_saisi(st, p, souhait):
 
 def test_le_souhait_est_lu_par_l_ia_une_seule_fois_par_texte(st, p, monkeypatch):
     appels = []
-    reel = activites.lire_souhait
-    monkeypatch.setattr(activites, "lire_souhait", lambda c, **kw: (appels.append(kw["souhait"]), reel(c, **kw))[1])
+    reel = activites.lire_saisie
+    monkeypatch.setattr(activites, "lire_saisie", lambda c, **kw: (appels.append(kw["texte"]), reel(c, **kw))[1])
     jusqu_au_souhait_saisi(st, p, "retrouver du calme")
     suivant(st, p)
     assert etat(st).ecran == "besoins_conclusion" and appels == ["retrouver du calme"]
@@ -637,7 +637,7 @@ def test_le_souhait_est_lu_par_l_ia_une_seule_fois_par_texte(st, p, monkeypatch)
 
 def test_detresse_reperee_par_l_ia_dans_le_souhait_affiche_le_meme_message_que_le_motto(st, p, monkeypatch):
     import simulation
-    monkeypatch.setitem(simulation._DONNEES, "lecture_souhait", {"detresse": True})
+    monkeypatch.setitem(simulation._DONNEES, "lecture_saisie", {"detresse": True})
     jusqu_au_souhait_saisi(st, p, "que tout s'arrête doucement")        # aucun mot-clé : seul le modèle le repère
     suivant(st, p)
     assert etat(st).ecran == "souhait"                                   # on reste pour afficher le message
@@ -660,13 +660,13 @@ def test_detresse_par_mots_cles_dans_le_souhait_s_affiche_aussi_sans_ia(st, p):
 
 def test_panne_ia_a_la_lecture_du_souhait_bloque_avec_reessayer(st, p, monkeypatch):
     etat_panne = {"panne": True}
-    reel = activites.lire_souhait
+    reel = activites.lire_saisie
 
     def instable(config, **kw):
         if etat_panne["panne"]:
             raise llm.LLMIndisponible("HTTP 503")
         return reel(config, **kw)
-    monkeypatch.setattr(activites, "lire_souhait", instable)
+    monkeypatch.setattr(activites, "lire_saisie", instable)
     jusqu_au_souhait_saisi(st, p, "retrouver du calme")
     suivant(st, p)
     assert etat(st).ecran == "souhait" and "momentanément indisponible" in st.textes("warning")
@@ -739,3 +739,75 @@ def test_texte_libre_du_composeur_passe_aussi_par_le_filet_de_detresse(st, p):
     saisir(st, "w_comp_avant", "j'ai envie d'en finir")
     tourner(st, p)
     assert "3114" in st.textes("warning")
+
+
+# ------------------------------------------------------------------ raisons du choix d'image lues par l'IA
+def jusqu_aux_raisons(st, p, raisons):
+    jusqu_a_la_grille(st, p)
+    choisir_image(st, p)
+    assert etat(st).ecran == "raisons_image"
+    saisir(st, "w_raisons", raisons)
+
+
+def test_raisons_lues_par_l_ia_une_seule_fois_par_texte_avec_le_bon_champ(st, p, monkeypatch):
+    appels = []
+    reel = activites.lire_saisie
+    monkeypatch.setattr(activites, "lire_saisie", lambda c, **kw: (appels.append((kw["champ"], kw["texte"])), reel(c, **kw))[1])
+    jusqu_aux_raisons(st, p, "Elle m'apaise")
+    suivant(st, p)
+    assert etat(st).ecran == "mots" and appels == [("raisons_image", "Elle m'apaise")]
+    tourner(st, p, "prec_mots")
+    suivant(st, p)                                            # même texte : pas de nouvel appel
+    assert etat(st).ecran == "mots" and len(appels) == 1
+    tourner(st, p, "prec_mots")
+    saisir(st, "w_raisons", "Elle m'apaise beaucoup")
+    suivant(st, p)
+    assert len(appels) == 2
+
+
+def test_raisons_vides_pas_d_appel_et_on_avance(st, p, monkeypatch):
+    appels = []
+    monkeypatch.setattr(activites, "lire_saisie", lambda c, **kw: appels.append(kw))
+    jusqu_aux_raisons(st, p, "   ")
+    suivant(st, p)
+    assert etat(st).ecran == "mots" and appels == []
+
+
+def test_detresse_reperee_par_l_ia_dans_les_raisons_affiche_le_message(st, p, monkeypatch):
+    import simulation
+    monkeypatch.setitem(simulation._DONNEES, "lecture_saisie", {"detresse": True})
+    jusqu_aux_raisons(st, p, "Elle me rappelle que plus rien ne compte")        # aucun mot-clé : seul le modèle le repère
+    suivant(st, p)
+    assert etat(st).ecran == "raisons_image"
+    w = st.textes("warning")
+    assert "15" in w and "3114" in w and "117" not in w and w.count("3114") == 1
+    suivant(st, p)
+    assert etat(st).ecran == "mots"
+
+
+def test_detresse_par_mots_cles_dans_les_raisons_s_affiche_des_l_ecran(st, p):
+    jusqu_aux_raisons(st, p, "j'ai envie d'en finir")
+    tourner(st, p)
+    assert "3114" in st.textes("warning")
+    suivant(st, p)
+    assert etat(st).ecran == "raisons_image"
+    suivant(st, p)
+    assert etat(st).ecran == "mots"
+
+
+def test_panne_ia_a_la_lecture_des_raisons_bloque_avec_reessayer(st, p, monkeypatch):
+    marche = {"ok": False}
+    reel = activites.lire_saisie
+
+    def instable(config, **kw):
+        if not marche["ok"]:
+            raise llm.LLMIndisponible("HTTP 503")
+        return reel(config, **kw)
+    monkeypatch.setattr(activites, "lire_saisie", instable)
+    jusqu_aux_raisons(st, p, "Elle m'apaise")
+    suivant(st, p)
+    assert etat(st).ecran == "raisons_image" and "momentanément indisponible" in st.textes("warning")
+    assert etat(st).w_raisons == "Elle m'apaise"
+    marche["ok"] = True
+    suivant(st, p)
+    assert etat(st).ecran == "mots"
