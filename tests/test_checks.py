@@ -149,9 +149,45 @@ def test_decouper_mot_recolle_exactement():
         assert "".join(x["texte"] for x in checks.decouper_mot(t, "nom_commun")) == t
 
 
-def test_seuls_verbes_noms_communs_et_noms_propres_sont_cliquables():
-    for nature, attendu in (("verbe", True), ("nom_commun", True), ("nom_propre", True), ("autre", False)):
+def test_seuls_verbes_noms_adjectifs_sont_cliquables():
+    for nature, attendu in (("verbe", True), ("nom_commun", True), ("nom_propre", True), ("adjectif", True),
+                            ("autre", False)):
         assert checks.decouper_mot("lumière", nature)[0]["cliquable"] is attendu
+    assert "adjectif" in checks.NATURES and "adjectif" in checks.NATURES_CLIQUABLES
+
+
+def test_adjectifs_possessifs_et_determinants_restent_non_cliquables_meme_etiquetes_adjectif():
+    for mot in ("mon", "ma", "mes", "ce", "cette", "leur", "tout", "chaque"):
+        assert not checks.decouper_mot(mot, "adjectif")[0]["cliquable"], mot
+
+
+def test_minimum_de_huit_mots_par_phrase():
+    assert checks.MOTS_MIN == 8
+    sept = "Je cultive le calme de mon jardin"          # 7 mots
+    huit = "Je cultive le calme de mon beau jardin"      # 8 mots
+    assert checks.compter_mots(sept) == 7 and checks.compter_mots(huit) == 8
+    assert any("mots" in p for p in checks.verifier_phrase_motto(sept))
+    assert checks.verifier_phrase_motto(huit) == []
+
+
+@pytest.mark.parametrize("motto", [
+    "Je choisis de savourer l'affection et l'apaisement que me procurent les papouilles de mon enfant intérieur",
+    "Avec force, je choisis d'aimer ma vie", "Je m'autorise à respirer", "J'aime mon chemin", "Je peux me poser",
+    "Je m'offre un ciel clair", "Je m'accorde du temps", "Je m'inspire du vent", "Je savoure le calme"])
+def test_invitations_explicites_admises_d_office(motto):
+    assert checks.a_invitation_explicite(motto)
+
+
+@pytest.mark.parametrize("motto", ["Je suis calme", "Je cultive le calme", "La vie est belle", "Sois calme"])
+def test_autres_tournures_laissees_au_modele(motto):
+    assert not checks.a_invitation_explicite(motto)
+
+
+def test_assembler_phrase():
+    assert checks.assembler_phrase("Je", [("savoure", "le"), ("calme", ", et"), ("douceur", "")]) == "Je savoure le calme, et douceur"
+    assert checks.assembler_phrase("j'", [("ouvre", "grand les bras.")]) == "j'ouvre grand les bras."
+    assert checks.assembler_phrase("", [("ouvre", ""), ("bras", "")]) == "ouvre bras"
+    assert checks.assembler_phrase("  ", []) == ""
 
 
 def test_mots_outils_jamais_cliquables_meme_etiquetes_verbe():

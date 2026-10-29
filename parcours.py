@@ -18,6 +18,11 @@ from pathlib import Path
 
 import streamlit as st
 
+try:                                     # composant tiers (requirements.txt) : glisser-déposer des mots
+    from streamlit_sortables import sort_items
+except ImportError:                      # sans lui, les mots restent dans l'ordre de la sélection
+    sort_items = None
+
 import activites
 import checks
 import llm
@@ -85,7 +90,7 @@ def _defauts() -> dict:
          "motto": "", "res_verdict": None, "version_amelio": 0,
          "res_aide": None, "sig_aide": None, "res_mouv": None, "sig_mouv": None,
          "w_raisons": "", "w_reflexion": "",
-         "w_souhait": "", "w_motto_saisie": ""}
+         "w_souhait": "", "w_motto_saisie": "", "souhait_lu": ""}
     for i in range(NB_LIBRES):
         d[f"w_mots_libres_{i}"] = ""
         d[f"w_libre_aide_{i}"] = ""
@@ -175,7 +180,7 @@ def selection_courante() -> list[str]:
 
 def textes_libres() -> list[str]:
     cles = [k for k in S.keys() if k.startswith(("w_raisons", "w_reflexion", "w_souhait", "w_motto_saisie",
-                                                   "w_sociales", "w_mots_libres_", "w_amelio_",
+                                                   "w_sociales", "w_mots_libres_", "w_amelio_", "w_comp_",
                                                    "w_libre_aide_", "w_libre_mouv_"))]
     return [str(S[k]) for k in cles if isinstance(S[k], str)] + [S.motto]
 
@@ -416,10 +421,21 @@ def ecran_souhait() -> None:
     st.text_area(c["champ"], key="w_souhait", max_chars=600)
 
     def suivant() -> None:
-        if souhait():
-            avancer()
-            st.rerun()
-        st.warning(c["erreur_vide"])
+        texte = souhait()
+        if not texte:
+            st.warning(c["erreur_vide"])
+            return
+        if S.souhait_lu != texte:            # l'IA lit le souhait (détresse) ; relancée seulement si le texte change
+            res, erreur = appel(G["attente_lecture"], activites.lire_souhait, souhait=texte)
+            if res is None:
+                erreur_ia(erreur)
+                return
+            S.souhait_lu = texte
+            if res.detresse:                 # même message que pour le motto, affiché en haut de l'écran :
+                st.rerun()                   # on reste ici ; le clic suivant (même texte) fait avancer
+        avancer()
+        st.rerun()
+    afficher_detresse()
     nav(sur_suivant=suivant)
 
 
@@ -481,6 +497,41 @@ def ecran_motto_propositions() -> None:
     nav(suivant=res is not None)
 
 
+def inserer_phrase(phrase: str) -> None:
+    """Rappel du bouton « placer cette phrase » (exécuté avant le réaffichage : la clé du champ est modifiable)."""
+    S.w_motto_saisie = phrase[:300]
+
+
+def composeur_phrase(choix: list[str]) -> None:
+    """Composer une phrase : mots retenus à glisser-déposer, avec du texte libre avant, entre et après."""
+    c = C["motto_redaction"]
+    st.markdown(f"**{c['composeur_titre']}**")
+    if not choix:
+        st.caption(c["composeur_vide"])
+        return
+    st.caption(c["composeur_aide"])
+    ordre = list(choix)
+    if sort_items is not None and len(choix) > 1:
+        rendu = sort_items(choix)
+        if isinstance(rendu, list) and sorted(rendu) == sorted(choix):    # garde-fou : mêmes mots, autre ordre
+            ordre = rendu
+    elif sort_items is None:
+        st.caption(c["composeur_sans_glisser"])
+    avant = st.text_input(c["composeur_avant"], key="w_comp_avant", placeholder=c["composeur_placeholder"])
+    couples = []
+    for mot in ordre:
+        gauche, droite = st.columns([1, 3])
+        with gauche:
+            st.markdown(f"**{mot}**")
+        with droite:
+            apres = st.text_input(f"{c['composeur_apres']} {mot}", key=f"w_comp_apres_{mot.lower()}",
+                                  placeholder=c["composeur_placeholder"], label_visibility="collapsed")
+        couples.append((mot, apres))
+    phrase = checks.assembler_phrase(avant, couples)
+    st.markdown(f"**{c['composeur_apercu']}** {phrase}")
+    st.button(c["composeur_inserer"], key="comp_inserer", on_click=inserer_phrase, args=(phrase,))
+
+
 def ecran_motto_redaction() -> None:
     c = C["motto_redaction"]
     titre("motto_redaction")
@@ -490,6 +541,7 @@ def ecran_motto_redaction() -> None:
     st.markdown(f"**{c['selection_titre']}**")
     choix = selection_courante()
     st.markdown(" / ".join(choix) if choix else c["selection_vide"])
+    composeur_phrase(choix)
     saisie = st.text_area(c["champ"], key="w_motto_saisie", max_chars=300, height=100)
     motto = saisie.strip()
 

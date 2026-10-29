@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-VERSION_PROMPTS = "2026-10-29-v0.1"
+VERSION_PROMPTS = "2026-10-29-v0.2"
 DOSSIER = Path(__file__).parent / "prompts"
 MAX_CHARS_SAISIE = 600  # longueur maximale d'un champ libre envoyé au modèle
 
@@ -17,7 +17,7 @@ _BLOCS = {
     "{{SAVOIR_MOTTO}}": "savoir_motto.md",
     "{{SAVOIR_RESSOURCES}}": "savoir_ressources.md",
 }
-ACTIVITES = ("motto_propositions", "motto_verification", "aide_memoire", "mouvements")
+ACTIVITES = ("motto_propositions", "motto_verification", "aide_memoire", "mouvements", "souhait_lecture")
 
 
 def _lire(nom: str) -> str:

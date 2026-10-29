@@ -22,6 +22,7 @@ progression = "Étape {numero} sur {total} : {titre}"
 reessayer = "Réessayer"
 attente = "Un instant, nous préparons vos propositions…"
 attente_verification = "Un instant, nous relisons votre motto…"
+attente_lecture = "Un instant, nous lisons votre souhait…"
 detail_technique = "Détail technique de l'erreur"
 info_technique = "Informations techniques"
 
@@ -280,7 +281,7 @@ Pour vous aider à rédiger votre motto, voici quelques phrases en rapport avec 
 
 Prenez le temps de prendre connaissance de ces phrases et sélectionnez la ou les mots/idées/expressions qui vous « parlent » en cliquant dessus. Une fois que vous avez terminé, cliquez sur « suivant ».
 """
-aide_cliquables = "Les mots en gras sont cliquables (verbes, noms communs et noms propres)."
+aide_cliquables = "Les mots en gras sont cliquables (verbes, noms communs, noms propres et adjectifs)."
 
 [motto_redaction]
 titre = "Formuler son motto"
@@ -290,6 +291,15 @@ selection_vide = "Aucun mot sélectionné pour le moment (vous pouvez revenir à
 champ = "Mon motto :"
 bouton = "Vérifier mon motto"
 erreur_vide = "Écrivez votre motto dans le cadre pour le vérifier."
+composeur_titre = "Composer ma phrase avec les mots retenus"
+composeur_aide = "Faites glisser les mots dans l'ordre de votre choix, puis ajoutez, si vous le souhaitez, du texte libre avant le premier mot, entre les mots et après chacun d'eux."
+composeur_vide = "Retenez des mots à l'écran précédent pour pouvoir composer une phrase."
+composeur_sans_glisser = "Le glisser-déposer n'est pas disponible dans cette installation : les mots restent dans l'ordre de votre sélection."
+composeur_avant = "Texte libre avant le premier mot"
+composeur_apres = "Texte libre après le mot"
+composeur_placeholder = "Texte libre (facultatif)"
+composeur_apercu = "Aperçu de ma phrase :"
+composeur_inserer = "Placer cette phrase dans mon champ de rédaction (remplace le texte actuel)"
 
 [motto_feedback]
 titre = "Formuler son motto"

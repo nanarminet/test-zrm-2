@@ -10,8 +10,8 @@ et « 4. Identification des ressources ») :
 
 | Étape | Contenu | IA |
 |---|---|---|
-| 1. Découverte de ses besoins | consignes du choix d'image (premier écran), choix de l'image parmi 45 (5 par ligne, avec confirmation), raisons, mots associés à l'image (liste de cases à cocher à droite de l'image) + mots libres, réflexion, souhait | aucune |
-| 2. Formulation du motto | infographie, synthèse, **5 phrases dont les verbes, noms communs et noms propres sont cliquables**, rédaction, **vérification** (10 critères), amélioration, synthèse finale | phrases du motto, vérification du motto |
+| 1. Découverte de ses besoins | consignes du choix d'image (premier écran), choix de l'image parmi 45 (5 par ligne, avec confirmation), raisons, mots associés à l'image (liste de cases à cocher à droite de l'image) + mots libres, réflexion, souhait | **lecture du souhait** (repérage d'une détresse uniquement, aucun texte généré) |
+| 2. Formulation du motto | infographie, synthèse, **5 phrases dont les verbes, noms communs, noms propres et adjectifs sont cliquables**, rédaction avec **composeur de phrase** (glisser-déposer), **vérification** (10 critères), amélioration, synthèse finale | phrases du motto, vérification du motto |
 | 3. Identification des ressources | aide-mémoire, ressources corporelles (mouvements) | **aide-mémoire** (4 fixes + 4 mobiles), **mouvements** (3 macro + 3 micro) |
 | Récapitulatif | tous les choix et les ressources associées, fichier HTML à télécharger (image intégrée, imprimable en PDF depuis le navigateur) | aucune |
 
@@ -25,11 +25,23 @@ témoignage »), reprise mot pour mot du document Drive « Témoignage Sophie »
 Les autres médias (podcast de relaxation, vidéos, expériences corps-pensées, infographie) n'ont pas encore d'alternative
 textuelle.
 
-**Phrases du motto** : les mots cliquables sont uniquement les verbes, noms communs et noms propres. Le modèle indique la
-nature de chaque mot ; le code force en « non cliquable » les mots-outils (pronoms, déterminants, prépositions,
-conjonctions, auxiliaires courants) et exige au moins 3 mots cliquables par phrase. Les adjectifs et adverbes ne sont
-pas cliquables. Il n'y a **pas** de bouton pour regénérer des phrases (limite des appels API) : l'IA n'est rappelée que si
-l'image, les mots ou le souhait changent, ou après un échec (« Réessayer »).
+**Phrases du motto** : les mots cliquables sont les verbes, noms communs, noms propres et adjectifs. Le modèle indique la
+nature de chaque mot ; le code force en « non cliquable » les mots-outils (pronoms, déterminants, y compris les
+adjectifs possessifs mon/ma/mes, prépositions, conjonctions, auxiliaires courants) et exige au moins 3 mots cliquables par
+phrase. Les adverbes ne sont pas cliquables. Il n'y a **pas** de bouton pour regénérer des phrases (limite des appels API) :
+l'IA n'est rappelée que si l'image, les mots ou le souhait changent, ou après un échec (« Réessayer »). La longueur d'une
+phrase va de **8 à 20 mots**.
+
+**Composeur de phrase** (écran de rédaction, au-dessus du champ libre) : les mots retenus s'affichent dans un composant
+de glisser-déposer (`streamlit-sortables`, paquet tiers, version fixée dans `requirements.txt`) ; sous lui, une zone de
+texte libre avant le premier mot et après chaque mot, et un aperçu de la phrase. Le bouton « Placer cette phrase dans mon
+champ de rédaction » remplace le contenu du champ libre. Si le paquet n'est pas installé, les mots restent dans l'ordre de la
+sélection (message affiché). Le glisser-déposer n'est pas utilisable au clavier : les zones de texte libre le sont.
+
+**Lecture du souhait** : au clic sur « Suivant », l'IA lit le souhait (un appel, relancé seulement si le texte change) et ne
+renvoie que le drapeau de détresse. Si elle (ou le filet de mots-clés) en repère une, le message de détresse (15 / 3114)
+s'affiche sous le champ et la personne reste sur l'écran ; un second clic sur « Suivant », avec le même texte, la
+laisse continuer.
 
 **Boutons de validation** : Streamlit n'envoie le contenu d'un champ texte qu'une fois la saisie validée (clic ailleurs
 ou Ctrl+Entrée), pas à chaque lettre. Un bouton ne peut donc pas suivre la frappe pour passer de grisé à actif. Les boutons
@@ -105,7 +117,7 @@ Le modèle n'est pas cru sur parole (`activites.py`, `checks.py`, `schemas.py`) 
 
 1. **Contrat JSON** : réponse validée (types, nombres d'éléments, 10 critères présents). Schéma envoyé au fournisseur
    (`json_schema`, repli automatique sur `json_object` s'il le refuse) **et** revérifié en local.
-2. **Contrôles déterministes** : 10–20 mots par phrase, nature de chaque mot (5 à 25 mots par phrase, 3 cliquables au minimum), négation,
+2. **Contrôles déterministes** : 8–20 mots par phrase, nature de chaque mot (5 à 25 mots par phrase, 3 cliquables au minimum), négation,
    formule de contrainte, « je », phrases trop proches entre elles, 5 objets minimum sur 8 idées d'aide-mémoire, doublons.
 3. **Une relance corrective** (2 appels maximum) avec la liste des défauts. Si un défaut persiste, le résultat est
    affiché tel quel et l'alerte va dans les journaux du serveur (jamais de boucle).
@@ -165,13 +177,15 @@ les appels Streamlit n'ont pas été exécutés pour de vrai lors de la construc
 |---|---|---|
 | Message de détresse | Bienveillant + **15** et **3114**. Les consultantes parlent du « 117 » : ce n'est pas un numéro d'urgence psychique en France (le 116 117 est celui des médecins de garde) | Vinatier / consultantes |
 | Mots-clés de détresse | Liste courte et prudente (`checks._DETRESSE`) | Professionnels du Vinatier |
-| 10–20 mots par phrase | Repris de la maquette. Les mottos officiels du livret font 8 à 15 mots (2 sur 8 ont moins de 10) : la borne basse peut écarter de bons mottos | Consultantes |
+| 8–20 mots par phrase | Maquette : 10 à 20 ; borne basse abaissée à 8 sur demande (les 8 mottos officiels du livret font 8 à 15 mots) | Consultantes |
 | Mots associés aux images | Repris tels quels des notes du PowerPoint, dont certains à connotation négative (non retirés) | Consultantes |
 | Critère 7 (possessifs) | « mon/ma/mes » exigés pour ce qui appartient à la personne | Consultantes |
 | Critère 10 | « Je peux… » accepté comme permission | Consultantes |
 | Critère 3 | Estimation qualitative du ton, pas une mesure des émotions | Consultantes |
 | Mouvements | Avertissement fixe « propositions à adapter à votre condition physique » | Consultantes |
-| Mots cliquables | Verbes, noms communs, noms propres ; adjectifs et adverbes exclus | Consultantes |
+| Mots cliquables | Verbes, noms communs, noms propres, adjectifs ; adverbes exclus | Consultantes |
+| Critère 4 (invitation) | « Je choisis de… » et toute attitude à vivre à la 1re personne sont admis ; refus seulement pour un état constaté (« Je suis calme ») ou un ordre. Les débuts de phrase du livret + « Je choisis de » sont admis d'office par le code | Consultantes |
+| Détresse dans le souhait | Message affiché, la personne peut continuer au second clic | Vinatier / consultantes |
 
 ## Limites connues
 
@@ -182,5 +196,3 @@ les appels Streamlit n'ont pas été exécutés pour de vrai lors de la construc
 - Les modèles et leurs conditions changent : fixer la version du modèle en production (`LLM_MODEL`) et relire les
   conditions de rétention / ZDR de Mistral avant tout usage avec de vraies données.
 - Non traité ici : hébergement et protection de la clé côté JS, RGPD / DPA, plafonds de dépense, accessibilité des médias autres que les témoignages de Sophie (voir plus haut).
-#   t e s t - z r m - 2  
- 

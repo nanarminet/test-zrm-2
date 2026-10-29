@@ -68,10 +68,64 @@ def test_preparer_image():
         activites.preparer_image(b"pas une image")
 
 
+# ------------------------------------------------------------------ lecture du souhait
+def test_lecture_du_souhait_renvoie_seulement_le_drapeau_de_detresse(sequence):
+    sequence.file = [reponse("lecture_souhait")]
+    res = activites.lire_souhait(FAUX, souhait="retrouver du calme")
+    assert res.activite == "lecture_souhait" and res.donnees == {} and res.detresse is False
+    envoye = sequence.appels[0]["messages"]
+    assert "<souhait>retrouver du calme</souhait>" in envoye[-1]["content"] or \
+        "retrouver du calme" in str(envoye[-1]["content"])
+    assert "detresse" in envoye[0]["content"] and "saisie_apprenant" in envoye[0]["content"]
+
+
+def test_lecture_du_souhait_detresse_signalee_par_le_modele(sequence):
+    sequence.file = [reponse("lecture_souhait", detresse=True)]
+    assert activites.lire_souhait(FAUX, souhait="que tout s'arrête").detresse is True
+
+
+def test_lecture_du_souhait_detresse_signalee_par_le_filet_de_mots_cles(sequence):
+    sequence.file = [reponse("lecture_souhait", detresse=False)]
+    assert activites.lire_souhait(FAUX, souhait="j'ai envie d'en finir").detresse is True
+
+
+def test_lecture_du_souhait_hors_contrat_relancee(sequence):
+    sequence.file = [reponse("lecture_souhait", detresse="oui"), reponse("lecture_souhait")]
+    res = activites.lire_souhait(FAUX, souhait="calme")
+    assert len(sequence.appels) == 2 and res.detresse is False
+
+
+# ------------------------------------------------------------------ « Je choisis de » et critère invitation
+def verdict_modele_refusant_l_invitation(motto):
+    d = copy.deepcopy(simulation._DONNEES["verification_motto"])
+    d["criteres"]["invitation"] = {"respecte": False, "explication": "L'expression est une constatation."}
+    return activites.construire_verdict(d, motto)
+
+
+def test_je_choisis_de_n_est_pas_refuse_comme_constatation():
+    motto = "Je choisis de savourer l'affection et l'apaisement que me procurent les papouilles de mon enfant intérieur"
+    v = verdict_modele_refusant_l_invitation(motto)
+    inv = next(c for c in v["criteres"] if c["id"] == "invitation")
+    assert inv["respecte"] is True and inv["explication"] == "" and inv["source"] == "code"
+    assert v["conforme"] is True
+
+
+def test_refus_du_modele_conserve_pour_une_vraie_constatation():
+    v = verdict_modele_refusant_l_invitation("Je suis calme et serein dans mon jardin intérieur")
+    inv = next(c for c in v["criteres"] if c["id"] == "invitation")
+    assert inv["respecte"] is False and v["conforme"] is False
+
+
+def test_les_prompts_disent_que_les_exemples_d_ouverture_ne_sont_pas_limitatifs():
+    import prompts
+    texte = prompts.construire_system("motto_verification")
+    assert "Je choisis de" in texte and "jamais une constatation" in texte and "liste fermée" in texte
+
+
 # ------------------------------------------------------------------ phrases du motto
 def phrases(*textes):
-    """Phrases au format du contrat : un mot par élément ; « Mot|v » = verbe, « Mot|n » = nom commun, sinon autre."""
-    natures = {"v": "verbe", "n": "nom_commun", "p": "nom_propre"}
+    """Phrases au format du contrat : un mot par élément ; « Mot|v » = verbe, « Mot|n » = nom commun, « Mot|p » = nom propre, « Mot|j » = adjectif, sinon autre."""
+    natures = {"v": "verbe", "n": "nom_commun", "p": "nom_propre", "j": "adjectif"}
     resultat = []
     for t in textes:
         mots = []
@@ -80,6 +134,12 @@ def phrases(*textes):
             mots.append({"texte": texte, "nature": natures.get(code, "autre")})
         resultat.append({"mots": mots})
     return resultat
+
+
+def test_adjectifs_comptent_parmi_les_mots_cliquables(sequence):
+    ph = activites._phrase_affichable(phrases("Je|a savoure|v le|a bleu|n profond|j de|a mon|a calme|n paisible.|j")[0])
+    assert ph["cliquables"] == ["savoure", "bleu", "profond", "calme", "paisible"]
+    assert "**profond**" in ph["rendu"] and "**paisible**." in ph["rendu"]
 
 
 def test_phrases_relance_corrective(sequence):

@@ -9,8 +9,8 @@ from __future__ import annotations
 import re
 import unicodedata
 
-# --- Bornes de longueur (prompt de la maquette : 10 à 20 mots par phrase) -------------
-MOTS_MIN = 10
+# --- Bornes de longueur (maquette : 10 à 20 mots ; borne basse abaissée à 8 sur demande) -----
+MOTS_MIN = 8
 MOTS_MAX = 20
 # Deux phrases ne doivent pas partager plus de ce nombre de mots pleins.
 CHEVAUCHEMENT_MAX = 1
@@ -33,6 +33,15 @@ _CONTRAINTE = re.compile(
     re.IGNORECASE)
 
 _PREMIERE_PERSONNE = re.compile(r"\b(?:je|j['’])", re.IGNORECASE)
+
+# Débuts de phrase qui sont des invitations à coup sûr : les « expressions utiles » du livret
+# (Je peux, Je m'autorise, Je m'accorde, Je savoure, J'aime, Je m'offre, Je m'inspire) et « Je choisis de »
+# (ajouté sur demande des consultantes : c'est un engagement envers soi, pas une constatation).
+# Sert à ne jamais laisser le modèle refuser ces tournures ; la liste n'est PAS limitative pour le critère.
+_INVITATION = re.compile(
+    r"(?:^|[,;:]\s*|\bet\s+)(?:je\s+|j['’]\s*)(?:peux|m['’]\s*autorise|m['’]\s*accorde|m['’]\s*offre"
+    r"|m['’]\s*inspire|savoure|aime|choisis\s+d(?:e|['’]))",
+    re.IGNORECASE)
 
 # Filet de sécurité (pas un outil clinique) : expressions explicites de détresse.
 # Liste courte et prudente, à faire relire par des professionnels du Vinatier.
@@ -83,11 +92,11 @@ _STOP_NORM = {_sans_accents(s) for s in _STOP}
 
 
 # --- Mots cliquables des phrases proposées ---------------------------------------------------
-# Seuls les verbes, noms communs et noms propres sont cliquables ; le reste (pronoms, déterminants,
-# prépositions, conjonctions, adverbes, adjectifs…) ne l'est pas. La nature de chaque mot est donnée par
+# Seuls les verbes, noms communs, noms propres et adjectifs sont cliquables ; le reste (pronoms, déterminants,
+# prépositions, conjonctions, adverbes…) ne l'est pas. La nature de chaque mot est donnée par
 # le modèle ; le code corrige ce qui est certain (mots-outils) et vérifie qu'il reste assez de mots cliquables.
-NATURES = ("verbe", "nom_commun", "nom_propre", "autre")
-NATURES_CLIQUABLES = ("verbe", "nom_commun", "nom_propre")
+NATURES = ("verbe", "nom_commun", "nom_propre", "adjectif", "autre")
+NATURES_CLIQUABLES = ("verbe", "nom_commun", "nom_propre", "adjectif")
 MOTS_CLIQUABLES_MIN = 3     # par phrase
 MOTS_PAR_PHRASE_MIN = 5
 MOTS_PAR_PHRASE_MAX = 25
@@ -160,6 +169,31 @@ def trouver_negation(texte: str) -> str | None:
 def trouver_contrainte(texte: str) -> str | None:
     m = _CONTRAINTE.search(texte)
     return m.group(0) if m else None
+
+
+_SANS_ESPACE_AVANT = re.compile(r"^[,.;:!?…»)\]]")
+_SANS_ESPACE_APRES = re.compile(r"(?:['’«(\[]|\s)$")
+
+
+def assembler_phrase(avant: str, couples: list[tuple[str, str]]) -> str:
+    """Phrase composée par l'apprenant : texte libre, puis chaque mot suivi de son texte libre.
+
+    Les espaces sont normalisés ; pas d'espace avant « , . ; : ! ? … » ni après une apostrophe (« j' » + « ouvre »).
+    """
+    morceaux = [avant] + [t for mot, apres in couples for t in (mot, apres)]
+    phrase = ""
+    for m in (x.strip() for x in morceaux):
+        if not m:
+            continue
+        if phrase and not _SANS_ESPACE_AVANT.match(m) and not _SANS_ESPACE_APRES.search(phrase):
+            phrase += " "
+        phrase += m
+    return phrase
+
+
+def a_invitation_explicite(texte: str) -> bool:
+    """Vrai si le motto contient un début de phrase admis d'office comme invitation (voir _INVITATION)."""
+    return bool(_INVITATION.search(texte.strip()))
 
 
 def a_premiere_personne(texte: str) -> bool:

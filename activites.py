@@ -1,4 +1,4 @@
-"""Les 4 activités IA : appel au modèle + contrôles en code + une relance corrective.
+"""Les 5 activités IA (lecture du souhait, phrases du motto, vérification, aide-mémoire, mouvements) : appel au modèle + contrôles en code + une relance corrective.
 
 Chaque activité renvoie un `ResultatActivite` :
   - `donnees`  : ce que l'interface affiche ;
@@ -28,7 +28,7 @@ MAX_IMAGE_SIDE = 1024     # px : l'image est réduite avant envoi (comme dans le
 
 # Nom du contrat JSON (schemas.py) -> fichier de prompt (prompts/*.md)
 FICHIER_PROMPT = {"propositions_motto": "motto_propositions", "verification_motto": "motto_verification",
-                  "aide_memoire": "aide_memoire", "mouvements": "mouvements"}
+                  "aide_memoire": "aide_memoire", "mouvements": "mouvements", "lecture_souhait": "souhait_lecture"}
 
 
 @dataclass
@@ -135,6 +135,19 @@ def _detresse(reponse: llm.Reponse, *saisies: str) -> bool:
 
 
 # --------------------------------------------------------------------------------------
+# 0. Lecture du souhait : repérer une détresse (aucun contenu généré)
+# --------------------------------------------------------------------------------------
+def lire_souhait(config: llm.Config, *, souhait: str) -> ResultatActivite:
+    """Le modèle lit le souhait et ne renvoie que le drapeau de détresse (le code ajoute son filet de mots-clés)."""
+    journal: list[dict] = []
+    user = llm.message_utilisateur(prompts.formater_saisies(souhait=souhait)
+                                   + "\nLis ce souhait et renseigne uniquement `detresse` (JSON uniquement).")
+    rep, alertes = _executer(config, activite="lecture_souhait", user_msg=user, evaluer=lambda d: ([], []),
+                             temperature=0.0, max_tokens=300, journal=journal)
+    return ResultatActivite("lecture_souhait", {}, _detresse(rep, souhait), alertes, journal)
+
+
+# --------------------------------------------------------------------------------------
 # 1. Panier à idées du motto : 5 phrases
 # --------------------------------------------------------------------------------------
 def _phrase_affichable(ph: dict) -> dict:
@@ -155,7 +168,7 @@ def _phrase_affichable(ph: dict) -> dict:
 
 
 def proposer_mottos(config: llm.Config, *, image_jpeg: bytes | None, idees: str, souhait: str) -> ResultatActivite:
-    """5 phrases dont les verbes, noms communs et noms propres sont cliquables.
+    """5 phrases dont les verbes, noms communs, noms propres et adjectifs sont cliquables.
 
     `donnees` = {"phrases": [{"texte", "rendu", "cliquables", "mots"}]}.
     """
@@ -174,7 +187,7 @@ def proposer_mottos(config: llm.Config, *, image_jpeg: bytes | None, idees: str,
                 bloquants.append(f"phrase {i} : chaque élément de « mots » doit être un seul mot")
             if len(ph["cliquables"]) < checks.MOTS_CLIQUABLES_MIN:
                 bloquants.append(f"phrase {i} : seulement {len(ph['cliquables'])} mots cliquables (verbes, noms "
-                                 f"communs, noms propres) ; il en faut au moins {checks.MOTS_CLIQUABLES_MIN}")
+                                 f"communs, noms propres, adjectifs) ; il en faut au moins {checks.MOTS_CLIQUABLES_MIN}")
             for m in ph["mots"]:       # mot-outil étiqueté verbe/nom : corrigé par le code, signalé dans les journaux
                 if m["nature"] in checks.NATURES_CLIQUABLES and not any(
                         x["cliquable"] for x in checks.decouper_mot(m["texte"], m["nature"])):
@@ -208,6 +221,10 @@ def construire_verdict(donnees: dict, motto: str) -> dict:
         brut = donnees["criteres"][meta["id"]]
         criteres.append({"id": meta["id"], "intitule": meta["intitule"], "priorite": meta["priorite"],
                          "respecte": brut["respecte"], "explication": brut["explication"].strip(), "source": "ia"})
+    if checks.a_invitation_explicite(motto):       # tournures admises d'office : le modèle ne peut pas les refuser
+        for c in criteres:
+            if c["id"] == "invitation" and not c["respecte"]:
+                c.update(respecte=True, explication="", source="code")
     if (neg := checks.trouver_negation(motto)):
         _forcer_ko(criteres, "emotions",
                    f"Votre motto contient une négation (« {neg} »). Pour garder un bilan émotionnel positif, "

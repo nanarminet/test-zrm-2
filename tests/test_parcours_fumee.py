@@ -606,3 +606,136 @@ def test_recap_bouton_recommencer_a_cote_du_telechargement_en_haut(st, p):
     idx_tel = sortie_texte.index("Télécharger mon récapitulatif")
     assert idx_tel < idx_rec < sortie_texte.index("Mon image") if "Mon image" in sortie_texte else idx_tel < idx_rec
     assert idx_rec - idx_tel <= 2                          # côte à côte, juste après le téléchargement
+
+
+# ------------------------------------------------------------------ souhait lu par l'IA, composeur de phrase
+def jusqu_au_souhait_saisi(st, p, souhait):
+    jusqu_a_la_grille(st, p)
+    choisir_image(st, p)
+    suivant(st, p)
+    cocher_mots(st, 2)
+    while etat(st).ecran != "souhait":
+        suivant(st, p)
+    saisir(st, "w_souhait", souhait)
+
+
+def test_le_souhait_est_lu_par_l_ia_une_seule_fois_par_texte(st, p, monkeypatch):
+    appels = []
+    reel = activites.lire_souhait
+    monkeypatch.setattr(activites, "lire_souhait", lambda c, **kw: (appels.append(kw["souhait"]), reel(c, **kw))[1])
+    jusqu_au_souhait_saisi(st, p, "retrouver du calme")
+    suivant(st, p)
+    assert etat(st).ecran == "besoins_conclusion" and appels == ["retrouver du calme"]
+    tourner(st, p, "prec_besoins_conclusion")
+    suivant(st, p)                                            # même texte : pas de nouvel appel
+    assert appels == ["retrouver du calme"] and etat(st).ecran == "besoins_conclusion"
+    tourner(st, p, "prec_besoins_conclusion")
+    saisir(st, "w_souhait", "retrouver du calme et de la joie")
+    suivant(st, p)
+    assert len(appels) == 2
+
+
+def test_detresse_reperee_par_l_ia_dans_le_souhait_affiche_le_meme_message_que_le_motto(st, p, monkeypatch):
+    import simulation
+    monkeypatch.setitem(simulation._DONNEES, "lecture_souhait", {"detresse": True})
+    jusqu_au_souhait_saisi(st, p, "que tout s'arrête doucement")        # aucun mot-clé : seul le modèle le repère
+    suivant(st, p)
+    assert etat(st).ecran == "souhait"                                   # on reste pour afficher le message
+    w = st.textes("warning")
+    assert "15" in w and "3114" in w and "117" not in w
+    assert w.count("3114") == 1
+    suivant(st, p)                                                       # la personne décide : même texte, on avance
+    assert etat(st).ecran == "besoins_conclusion"
+
+
+def test_detresse_par_mots_cles_dans_le_souhait_s_affiche_aussi_sans_ia(st, p):
+    jusqu_au_souhait_saisi(st, p, "j'ai envie d'en finir")
+    tourner(st, p)
+    assert "3114" in st.textes("warning")                                # dès l'écran, avant tout clic
+    suivant(st, p)
+    assert etat(st).ecran == "souhait"
+    suivant(st, p)
+    assert etat(st).ecran == "besoins_conclusion"
+
+
+def test_panne_ia_a_la_lecture_du_souhait_bloque_avec_reessayer(st, p, monkeypatch):
+    etat_panne = {"panne": True}
+    reel = activites.lire_souhait
+
+    def instable(config, **kw):
+        if etat_panne["panne"]:
+            raise llm.LLMIndisponible("HTTP 503")
+        return reel(config, **kw)
+    monkeypatch.setattr(activites, "lire_souhait", instable)
+    jusqu_au_souhait_saisi(st, p, "retrouver du calme")
+    suivant(st, p)
+    assert etat(st).ecran == "souhait" and "momentanément indisponible" in st.textes("warning")
+    assert etat(st).w_souhait == "retrouver du calme"
+    etat_panne["panne"] = False
+    suivant(st, p)
+    assert etat(st).ecran == "besoins_conclusion"
+
+
+def choix_de_mots(st, p):
+    """Va à la rédaction avec 3 mots retenus : renvoie la liste des mots (ordre de sélection)."""
+    jusqu_au_motto(st, p)
+    res = etat(st).res_phrases
+    choisis = res.donnees["phrases"][0]["cliquables"][:2] + res.donnees["phrases"][3]["cliquables"][:1]
+    saisir(st, f"w_seg_{res.id}_1", choisis[:2])
+    saisir(st, f"w_seg_{res.id}_4", choisis[2:])
+    suivant(st, p)
+    assert etat(st).ecran == "motto_redaction"
+    return choisis
+
+
+def test_composeur_au_dessus_du_champ_libre_avec_texte_libre_entre_les_mots(st, p):
+    mots = choix_de_mots(st, p)
+    tourner(st, p)
+    sortie = [t for g, t in st.sortie]
+    i_compo = sortie.index("**Composer ma phrase avec les mots retenus**")
+    i_champ = len(sortie) - 1 - sortie[::-1].index("Vérifier mon motto")
+    assert i_compo < i_champ
+    for mot in mots:                                                     # une zone de texte libre à la suite de chaque mot
+        assert f"w_comp_apres_{mot.lower()}" in etat(st).keys()
+    assert "w_comp_avant" in etat(st).keys()
+    assert "Aperçu de ma phrase :" in st.textes("markdown")
+
+
+def test_composeur_glisser_deposer_ordre_et_texte_libre_places_dans_le_champ(st, p, monkeypatch):
+    mots = choix_de_mots(st, p)
+    monkeypatch.setattr(p, "sort_items", lambda items: list(reversed(items)))       # l'apprenant inverse l'ordre
+    saisir(st, "w_comp_avant", "Je")
+    saisir(st, f"w_comp_apres_{mots[0].lower()}", "et j'")
+    tourner(st, p)
+    attendu = checks.assembler_phrase("Je", [(m, "et j'" if m == mots[0] else "") for m in reversed(mots)])
+    assert attendu in st.textes("markdown")
+    tourner(st, p, "comp_inserer")
+    assert etat(st).w_motto_saisie == attendu
+
+
+def test_composeur_sans_composant_garde_l_ordre_de_la_selection(st, p, monkeypatch):
+    mots = choix_de_mots(st, p)
+    monkeypatch.setattr(p, "sort_items", None)
+    tourner(st, p)
+    assert "glisser-déposer n'est pas disponible" in st.textes("caption")
+    assert " ".join(mots) in st.textes("markdown")
+
+
+def test_composeur_ignore_un_ordre_incoherent_du_composant(st, p, monkeypatch):
+    mots = choix_de_mots(st, p)
+    monkeypatch.setattr(p, "sort_items", lambda items: ["mot inconnu"])
+    tourner(st, p)
+    assert " ".join(mots) in st.textes("markdown")
+
+
+def test_composeur_sans_mot_retenu(st, p):
+    jusqu_a_la_redaction(st, p)
+    tourner(st, p)
+    assert "Retenez des mots" in st.textes("caption") and "comp_inserer" not in st.boutons
+
+
+def test_texte_libre_du_composeur_passe_aussi_par_le_filet_de_detresse(st, p):
+    choix_de_mots(st, p)
+    saisir(st, "w_comp_avant", "j'ai envie d'en finir")
+    tourner(st, p)
+    assert "3114" in st.textes("warning")

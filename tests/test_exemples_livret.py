@@ -17,9 +17,10 @@ def test_mottos_officiels_sans_defaut_mecanique(motto):
 
 
 def test_longueurs_des_mottos_officiels_documentees():
-    """Garde-fou : les bornes 10-20 mots de la maquette ne sont pas celles du livret."""
+    """Garde-fou : les bornes (8 à 20 mots) laissent passer tous les mottos officiels du livret (8 à 15 mots)."""
     longueurs = [checks.compter_mots(m) for m in MOTTOS]
-    assert min(longueurs) < checks.MOTS_MIN      # des mottos officiels sont plus courts que 10 mots
+    assert checks.MOTS_MIN == 8 and checks.MOTS_MAX == 20
+    assert min(longueurs) >= checks.MOTS_MIN
     assert max(longueurs) <= checks.MOTS_MAX
 
 

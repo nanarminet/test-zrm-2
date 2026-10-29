@@ -5,4 +5,3 @@ __pycache__/
 .streamlit/secrets.toml
 journal_poc.json
 data/*.pptx
-_to_delete/
