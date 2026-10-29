@@ -1,0 +1,638 @@
+# Textes FIXES du parcours (hors réponses de l'IA), repris des PowerPoint :
+#   "2. Découverte de ses besoins", "3. Formulation du motto - Textes octobre 2026", "4. Identification des ressources".
+# Ils sont repris tels quels pour ce premier test (coquilles comprises) ; ajustez-les ici, sans toucher au code.
+# Format : Markdown (paragraphes séparés par une ligne vide). Aucun emoji.
+
+[general]
+titre_application = "Comprendre mes ressources"
+fin = "Fin de la partie du parcours incluse dans ce test."
+media = "Contenu non inclus dans ce test"
+genere_ia = "(généré par IA)"
+temoignage_media = "Témoignage de Sophie (lancer l'écoute)"
+transcription_titre = "Lire la transcription du témoignage"
+
+# Libellés de l'interface (boutons, barre latérale)
+precedent = "Précédent"
+suivant = "Suivant"
+commencer = "Commencer"
+reprendre = "Reprendre"
+menu = "Menu du parcours"
+recommencer = "Recommencer à zéro"
+progression = "Étape {numero} sur {total} : {titre}"
+reessayer = "Réessayer"
+attente = "Un instant, nous préparons vos propositions…"
+attente_verification = "Un instant, nous relisons votre motto…"
+detail_technique = "Détail technique de l'erreur"
+info_technique = "Informations techniques"
+
+[menu]
+titre = "Le parcours"
+corps = "Sélectionnez votre étape en cours."
+prerequis = "Terminez d'abord l'étape précédente."
+etapes = [
+  { titre = "Découverte de ses besoins", sous_titre = "Le choix de l'image" },
+  { titre = "Formulation du motto", sous_titre = "L'écriture" },
+  { titre = "Identification des ressources", sous_titre = "La création des aides-mémoires" },
+  { titre = "Préparation à l'action", sous_titre = "L'anticipation (non simulée dans ce test)" },
+]
+
+# ------------------------------------------------------------------ 1. Découverte de ses besoins
+[besoins_intro]
+titre = "Découverte de ses besoins"
+corps = """
+Durant cette étape, vous allez partir à la découverte de vos besoins.
+
+Pour cela, vous allez d'abord laisser votre corps guider votre choix puis faire intervenir votre raison pour clarifier ce choix.
+
+Vous allez ensuite formuler clairement ce à quoi vous aspirez.
+
+Bonne découverte !
+"""
+
+[bilan_principe]
+titre = "Le bilan émotionnel"
+corps = """
+Au cours de votre parcours, un bilan émotionnel vous sera parfois demandé.
+
+Il consiste, sur une situation donnée, à évaluer la part d'émotions positives et d'émotions négatives, de manière séparée.
+
+Le principe ? S'assurer que votre corps fait bien partie de l'aventure et que ce n'est pas la tête seule qui décide.
+"""
+curseur_positif = "Émotions positives"
+curseur_negatif = "Émotions négatives"
+theorie_titre = "Et la théorie ? En savoir plus sur la théorie"
+theorie = """
+Le bilan émotionnel sollicite votre capacité à observer les signaux envoyés par votre corps. Théorisés par le Dr Antonio Damasio, les marqueurs somatiques sont des manifestations (des sensations par exemple) qui produisent de façon totalement inconsciente lorsqu'on est confronté à quelque chose (une image ou une situation par exemple).
+
+**Pourquoi analyser séparément vos émotions ?**
+
+Parce que les affects positifs et négatifs sont produits dans le cerveau par deux systèmes totalement distincts et indépendants : le système de récompense (nucleus accumbens) qui génère les ressentis positifs et le système de punition (amygdale) qui génère les ressentis négatifs.
+
+Comme ces deux circuits s'activent en parallèle, une même chose peut provoquer un mélange d'enthousiasme et de frein. Les évaluer séparément permet de rendre visibles ces forces contraires.
+"""
+
+[bilan_test]
+titre = "Le bilan émotionnel : faisons le test"
+corps = """
+Au cours de votre parcours, un bilan émotionnel vous sera parfois demandé. Le principe ?
+
+Les éléments que vous choisissez ne devront générer aucune émotion négative et au moins 70 % d'émotions positives.
+
+**Faisons le test !** Réalisez le bilan émotionnel correspondant à l'organisation d'un dîner entre amis.
+
+Déplacez les curseurs afin qu'ils correspondent à ce que vous ressentez puis cliquez sur « Valider ».
+"""
+bouton = "Valider"
+resultat = """
+Organiser un dîner peut activer les deux échelles de manière bien distinctes.
+
+D'un côté, la joie d'accueillir, le plaisir de cuisiner et l'impatience de partager un bon moment.
+
+De l'autre, la pression de bien faire, qui peut susciter du stress ou de l'angoisse.
+
+Ces deux ressentis ne s'annulent pas : ils coexistent souvent en même temps.
+
+Même si un bilan émotionnel est par essence personnel, voici quelques exemples.
+"""
+exemples_media = "Exemples de bilans émotionnels"
+regle = """
+Dans le cadre du ZRM®, le bilan émotionnel des éléments que vous choisirez devra toujours être le suivant :
+
+- Aucune (0) émotions négatives
+- 70 % au moins d'émotions positives
+"""
+
+[choix_image_consignes]
+titre = "Choisir l'image"
+podcast = """
+Pour procéder à votre premier choix, vous devez mettre votre raison en pause et être à l'écoute de vos sensations.
+
+Voici un mini-podcast de relaxation pour vous aider à vous détendre et à vous placer dans l'état d'esprit optimal pour faire ce choix.
+"""
+podcast_media = "Mini-podcast de relaxation (lancer la séquence)"
+consignes = """
+Vous allez avoir accès à des images et vous devrez en choisir une.
+
+**Comment bien choisir votre image ?**
+
+- Réalisez le bilan émotionnel de l'image qui doit être d'au moins 70 % d'émotions positives et 0 % d'émotions négatives
+- Faites un choix spontané sur le mode « J'aime / je n'aime pas » en laissant parler votre ventre
+- Pour vous aider, vous pouvez répondre à la question « Quelle image peut me servir de ressource dans ma vie actuellement ? »
+- Pensez éventuellement à un thème spécifique si vous le souhaitez
+"""
+temoignage = "Avant de faire votre choix, vous pouvez écouter le témoignage de Sophie."
+temoignage_media = "Témoignage de Sophie (lancer l'écoute)"
+transcription_titre = "Lire la transcription du témoignage"
+
+[choix_image]
+titre = "Choisir l'image"
+corps = """
+Parcourez l'ensemble des images (faites défiler la page), puis cliquez sur « Choisir » sous celle que vous avez choisie.
+"""
+bouton = "Choisir"
+dialogue_titre = "Confirmer votre choix"
+dialogue_corps = "Est-ce bien l'image que vous choisissez ?"
+dialogue_valider = "Valider ce choix"
+dialogue_annuler = "Annuler"
+
+[raisons_image]
+titre = "Choisir l'image"
+corps = "Inscrivez dans le cadre les raisons qui vous ont poussées à choisir cette image."
+champ = "Mes raisons"
+
+[mots]
+titre = "Mettre des mots sur une image"
+label = "Mots associés à l'image"
+minimum = "Sélectionnez au moins un mot pour continuer."
+temoignage = "Vous allez ensuite choisir des idées en rapport avec votre image. Avant, vous pouvez écouter le témoignage de Sophie."
+corps = """
+Sur la base de l'image que vous avez choisie, voici quelques mots proposés sur le principe d'un panier à idées.
+
+Vous allez sélectionner vos idées favorites. Pour valider votre choix, rappelez-vous que bilan émotionnel de chaque mot retenu doit afficher au moins 70 % d'affects positifs et 0 % de négatif.
+
+**Cliquez sur sur vos idées favorites.**
+"""
+panier_titre = "Le panier à idées"
+panier = """
+**C'est quoi un panier aux idées ?**
+
+Le panier aux idées est un outil de la méthode ZRM conçu pour nourrir la réflexion grâce au regard extérieur. Le principe veut que ce soient les autres qui partagent les idées, émotions ou sensations positives que vous choix leur inspire, de manière totalement libre.
+
+Dans ce module e-learning, cette dynamique de groupe est recréée par les concepteurs et par une Intelligence Artificielle. Ils jouent le rôle de tiers neutres pour vous offrir des associations variées.
+"""
+
+[mots_complementaires]
+titre = "Mettre des mots sur une image"
+corps = """
+Observez votre image et les mots que vous avez sélectionnés.
+
+Si vous le souhaitez, vous pouvez encore compléter la liste.
+
+Inscrivez vos mots complémentaires dans les cadres.
+"""
+placeholder = "Écrivez ici"
+
+[reflexion]
+titre = "Réfléchir sur les raisons de mon choix"
+corps = """
+Jusqu'à présent, vous avez laissé votre corps et vos émotions s'exprimer librement. À présent, il est temps d'inviter votre raison à entrer en scène.
+
+**Pourquoi faire appel à votre logique maintenant ?**
+
+Cette phase d'introspection va vous permettre de clarifier vos ressentis et d'apprendre à interpréter vos signaux internes. C'est également l'occasion de synchroniser votre raison et votre corps pour être davantage en accord avec vous-même.
+"""
+question = "Pourquoi ai-je réagi si positivement à mes idées favorites ?"
+consigne = "Répondez à la question en écrivant dans le cadre ci-dessous."
+
+[souhait_intro]
+titre = "Formuler mon souhait"
+corps = """
+Rédiger un souhait permet de définir une direction pour orienter vos ressources.
+
+Ce qui était identifié comme un frein se transforme en souhait attrayant à fort pouvoir motivationnel.
+
+Par exemple, une personne qui aurait une problématique spécifique : « J'ai l'impression d'être au service des autres et de ne plus être libre dans ma vie », peut formuler son souhait de la façon suivante : « Je veux être comme un aigle, pouvoir prendre de la hauteur et voler en toute liberté ».
+
+Vous remarquez que le souhait est lié à l'image et qu'il est formulé de manière très poétique et métaphorique, afin qu'il puisse aussi parler au corps.
+"""
+autres_titre = "Visualiser d'autres souhaits"
+autres = """
+- « Je veux enfiler mes chaussures de randonnée et marcher avec vigueur et curiosité. »
+- « J'ai besoin de remplir ma vie de plaisir, d'amour et d'affriolantes framboises. »
+"""
+temoignage = "Vous allez formuler votre propre souhait. Avant, vous pouvez écouter le témoignage de Sophie."
+souhait_sophie = "Le souhait de Sophie : « je souhaite retrouver la petite fille que j'étais avec la force et les qualités qui sont les miennes, dans la joie. »"
+
+[souhait]
+titre = "Formuler mon souhait"
+corps = """
+À partir des idées que vous avez sélectionnées et de ce que vous avez écrit au sujet de vos choix, vous allez pouvoir rédiger votre souhait.
+
+Il décrit la façon dont vous aimeriez être, agir, penser, etc.
+
+Écrivez votre souhait dans le cadre ci-dessous.
+"""
+amorces = ["J'aimerais que …", "Je souhaite que …"]
+erreur_vide = "Écrivez votre souhait dans le cadre pour continuer."
+champ = "Mon souhait"
+
+[besoins_conclusion]
+titre = "Formuler mon souhait"
+corps = """
+Cette première étape vous a permis de vous mettre à l'écoute de vos besoins profonds. Vous avez ainsi clarifié ce vers quoi vous souhaitez tendre aujourd'hui.
+
+La suite du parcours vous permettra d'aller encore plus loin : vous allez définir votre « objectif d'attitude » grâce à la formulation d'un motto.
+
+Votre but reste le même : agir en parfaite harmonie avec vos aspirations, en scellant l'alliance entre votre corps et votre esprit.
+"""
+regle_titre = "La règle d'or pour une vie satisfaisante : en savoir plus"
+regle = """
+**⅓ (un tier)**
+
+L'auto-contrôle se produit lorsque vous agissez uniquement par obligation ou par devoir, selon ce que votre raison considère comme nécessaire mais à l'encontre totale de vos sensations corporelles. Ce fonctionnement interne se traduit par des formulations rigides comme « Je dois » ou « Je devrais ».
+
+**⅔ (deux tiers)**
+
+À l'inverse, l'auto-régulation correspond à un état d'alignement et de plaisir où vous faites ce qu'il vous plaît. Vous agissez alors en parfaite harmonie, en tenant compte simultanément de votre raison et de vos ressentis profonds, ce qui s'exprime naturellement par un libre « Je veux ».
+"""
+
+# ------------------------------------------------------------------ 2. Formulation du motto
+[motto_intro]
+titre = "Formulation du motto"
+corps = """
+Durant cette étape, vous allez découvrir ce qu'est le motto, synonyme d'objectif d'attitude ou de devise dans le ZRM, ainsi que des astuces pour pouvoir le formuler, avant de créer votre propre motto.
+
+Bonne découverte !
+"""
+
+[motto_infographie]
+titre = "Comprendre le motto"
+corps = """
+Découvrez dans cette infographie en quoi consiste le motto, ainsi que des astuces pour le formuler.
+
+Utilisez les flèche de votre clavier pour naviguer. Une fois que vous avez terminé, cliquez sur le bouton « suivant ».
+"""
+media = "Infographie : comprendre le motto"
+
+[motto_synthese]
+titre = "Formuler son motto"
+corps = "Pour formuler votre motto, vous allez avoir besoin de votre image, de vos idées favorites et de votre souhait créés lors de la première étape du ZRM. En voici une synthèse visuelle :"
+temoignage = "Avant de vous lancer, vous pouvez écouter le témoignage de Sophie qui explique comment elle a construit son motto."
+motto_sophie = "Le motto de Sophie : « Avec tendresse, je cultive mes valeurs et je m'ouvre à la douceur de la vie. »"
+
+[motto_navigation]
+titre = "Formuler son motto"
+corps = """
+Vous allez maintenant suivre les étapes pour formuler votre motto.
+
+Vous pouvez à tout moment revoir :
+
+- les critères de rédaction du motto, en ouvrant le panneau « Les critères de formulation du motto »
+- la synthèse de votre image, de vos idées favorites et de votre souhait, en ouvrant le panneau « Ma synthèse »
+"""
+criteres_titre = "Les critères de formulation du motto"
+synthese_titre = "Ma synthèse"
+
+[motto_propositions]
+titre = "Formuler son motto"
+corps = """
+Pour vous aider à rédiger votre motto, voici quelques phrases en rapport avec votre image, vos idées favorites et votre souhait proposées sur le principe d'un panier à idées. Ces phrases respectent les critères de rédaction du motto.
+
+Prenez le temps de prendre connaissance de ces phrases et sélectionnez la ou les mots/idées/expressions qui vous « parlent » en cliquant dessus. Une fois que vous avez terminé, cliquez sur « suivant ».
+"""
+aide_cliquables = "Les mots en gras sont cliquables (verbes, noms communs et noms propres)."
+
+[motto_redaction]
+titre = "Formuler son motto"
+corps = "Maintenant, en vous inspirant des mots/idées que vous avez sélectionnés, vous avez le champs libre pour rédiger votre propre motto."
+selection_titre = "Mes mots/idées/expressions sélectionnés :"
+selection_vide = "Aucun mot sélectionné pour le moment (vous pouvez revenir à l'écran précédent)."
+champ = "Mon motto :"
+bouton = "Vérifier mon motto"
+erreur_vide = "Écrivez votre motto dans le cadre pour le vérifier."
+
+[motto_feedback]
+titre = "Formuler son motto"
+mon_motto = "Mon motto :"
+points = "Quelques points sont à ajuster :"
+exemple = "Exemple de formulation conforme :"
+ameliore = "Mon motto amélioré :"
+ameliore_aide = "Vous avez le champs libre pour améliorer votre motto si vous le souhaitez."
+dialogue_titre = "Votre motto n'est pas encore conforme"
+dialogue_corps = "Les éléments suivants ne respectent pas les critères de formulation :"
+dialogue_ameliorer = "Améliorer mon motto"
+dialogue_continuer = "Continuer quand même"
+
+[motto_final]
+titre = "Formuler son motto"
+corps = "Votre motto est maintenant prêt ! Retrouvez ci-dessous votre synthèse finale avant de passer à la suite du ZRM : identifier ses ressources."
+mon_motto = "Mon motto :"
+
+# Exemples du livret (affichés dans le panneau « Les critères de formulation du motto »)
+[[criteres]]
+intitule = "Un objectif d'approche (ce que je veux, pas ce que j'évite)"
+ok = "Je cultive le calme"
+ko = "Je n'emprunte pas le chemin de la colère"
+[[criteres]]
+intitule = "100 % sous mon contrôle (je ne dépends de personne d'autre)"
+ok = "Je déploie clairement mes intentions"
+ko = "Je crée l'harmonie dans ma famille"
+[[criteres]]
+intitule = "Un bilan émotionnel positif (au moins 70 % d'émotions positives, aucune négation ni mot négatif)"
+ok = "Je me détends dans le bleu profond de mon être"
+ko = "Je n'ai pas peur d'affronter les turbulences de la vie"
+[[criteres]]
+intitule = "Formulé comme une invitation, une incitation ou une autorisation"
+ok = "Je m'autorise à… ; Je m'offre…"
+ko = "Une constatation ou un ordre"
+[[criteres]]
+intitule = "Un langage simple, coloré, imagé, poétique"
+ok = "Je m'autorise à me balader sur mon îlot de liberté."
+ko = "Je prends du temps pour me reposer."
+[[criteres]]
+intitule = "Une formulation générale (pas de contexte particulier)"
+ok = "Dans cette étable, j'ai mon mot à dire !"
+ko = "Avec Francis, j'ai mon mot à dire !"
+[[criteres]]
+intitule = "La première personne (« je ») et les adjectifs possessifs (« mon », « ma », « mes »)"
+ok = "Je m'ouvre à la douceur de la vie. ; Je marche sur mon chemin"
+ko = "La douceur de la vie est savourée. ; Je marche sur le chemin"
+[[criteres]]
+intitule = "Écrit au présent"
+ok = "Je cultive la douceur de la vie."
+ko = "Je cultiverai la douceur de la vie."
+[[criteres]]
+intitule = "Sans comparaison"
+ok = "Avec force, j'ai confiance en moi."
+ko = "Avec force, j'ai plus confiance en moi"
+[[criteres]]
+intitule = "Sans verbe ni formule de contrainte (vouloir, devoir, falloir…)"
+ok = "Je savoure la vie avec calme."
+ko = "Il faut que je savoure la vie avec calme."
+
+# ------------------------------------------------------------------ 3. Identification des ressources
+[ressources_intro]
+titre = "Identification des ressources"
+corps = """
+Durant cette étape, vous allez partir à la découverte de vos ressources.
+
+Vous allez identifier les éléments qui vous aideront à avoir un comportement bénéfique pour vous.
+
+Bonne découverte !
+"""
+
+[ressources_video]
+titre = "Identification des ressources"
+corps = """
+« Mobiliser vos ressources pour changer vos habitudes »
+
+Les images et le motto sont des ressources, dans lesquelles vous pouvez puiser pour vous aider à adopter un comportement plus bénéfique pour vous.
+
+Mais ce ne sont pas les seules.
+
+Découvrez dans cette vidéo ce que sont les ressources définies par le ZRM© : à quoi servent-elles et quelles sont-elles ?
+"""
+media = "Vidéo de 3 minutes : Mobiliser vos ressources pour changer vos habitudes"
+resume_titre = "En résumé"
+resume = """
+Pour agir conformément à son objectif ou « motto », il est nécessaire d'activer régulièrement le réseau de neurones associé.
+
+À force de répétition, ce chemin se renforce et le comportement souhaité devient une habitude.
+
+Une ressource est ce qui vous permet cette activation cérébrale bénéfique. Pour être efficace, elle doit obligatoirement remplir deux critères : être fonctionnelle et procurer du plaisir.
+
+Votre image et votre motto sont des ressources mais ce ne sont pas les seules. On trouve aussi :
+
+- les aide-mémoire
+- les ressources corporelles
+- les ressources sociales
+"""
+
+[aide_theorie]
+titre = "Définir mes aide-mémoire"
+corps = """
+Les aide-mémoire font partie des ressources du ZRM©.
+
+**Un aide-mémoire = tout objet, odeur, musique, qui vous évoque votre motto.**
+
+En effet, le réseau neuronal s'active non seulement par une action (quand vous agissez avec succès en adéquation avec votre motto) mais aussi grâce à une activité mentale.
+
+En d'autres termes, penser à votre motto, de manière consciente ou inconsciente, est déjà bénéfique pour agir, plus tard, en adéquation avec votre objectif.
+"""
+usages = """
+Les aide-mémoire peuvent être utilisés :
+
+- **soit de façon consciente** : lorsqu'on active consciemment son motto, dans une situation donnée pour produire un nouveau comportement. On déclenche le motto volontairement.
+- **soit de façon inconsciente** : lorsqu'on perçoit une amorce (aussi appelé « prime ») que l'on a créé en amont, afin de nous inciter dans un deuxième temps à se comporter de la façon souhaitée. On perçoit juste l'amorce, qui inconsciemment fait référence à notre motto.
+"""
+
+[aide_panier]
+titre = "Définir mes aide-mémoire"
+corps = """
+Et vous, quels seront vos aide-mémoire ?
+
+Nous allons définir vos aide-mémoire, qui sont efficaces et qui vous font plaisir.
+
+Pour commencer, ayez en tête votre motto et votre image.
+"""
+revoir_titre = "Revoir mon image et relire mon motto"
+suite = "Nous allons maintenant faire un panier aux idées pour vous aider à définir vos aide-mémoire."
+temoignage = "Nous allons vous aider à définir vos aide-mémoire afin de vous faire penser consciemment ou inconsciemment à votre motto. Avant, vous pouvez écouter le témoignage de Sophie."
+
+[aide_ia]
+titre = "Définir mes aide-mémoire"
+corps = """
+Voici quelques idées que nous avons trouvées spécialement pour vous.
+
+Qu'en pensez-vous ?
+
+Cliquez sur les aide-mémoire qui vous plaisent le plus (1 au minimum dans chaque colonne)
+"""
+colonne_fixes = "Aide-mémoire fixes"
+colonne_mobiles = "Aide-mémoire mobiles"
+erreur_minimum = "Sélectionnez au moins un aide-mémoire dans chaque colonne."
+
+[aide_libres]
+titre = "Définir mes aide-mémoire"
+corps = """
+Merci pour vos réponses.
+
+Avez-vous d'autres idées ? Écrivez dans les espaces ci-dessous.
+"""
+note = "À noter que vous pouvez utiliser un objet que vous possédez déjà ! Dans ce cas, il faut simplement ajouter quelque chose de nouveau à l'objet pour qu'il acquière une nouvelle signification. Ex : ajouter un noeud à une bougie que vous possédez déjà."
+types = ["Fixe", "Mobile"]
+type_label = "Type"
+
+[aide_recap]
+titre = "Définir mes aide-mémoire"
+corps = "Finalement, voici les aide-mémoire qui pourraient vous être utiles."
+action = """
+Maintenant, en action ! Mettez concrètement en place ces aide-mémoire dans les prochains jours !
+"""
+aucun = "Aucun aide-mémoire sélectionné."
+
+[mouvements_theorie]
+titre = "Définir mes ressources corporelles"
+corps = """
+Les mouvements du corps font partie des ressources du ZRM©.
+
+**Une ressource corporelle = tout mouvement qui vous évoque votre motto.**
+
+En effet, les informations provenant du corps influencent nos pensées et nos émotions (et inversement !). C'est ce qu'on appelle la « cognition incarnée » (ou embodiment) en psychologie.
+
+En d'autres termes, en incarnant votre motto à travers des mouvements, vous pourrez agir sur vos pensées et vos émotions.
+"""
+experiences = """
+Réalisez ces expériences pour découvrir le lien entre corps et pensées.
+
+Un dispositif audio est nécessaire pour cette partie.
+"""
+experience_1 = "Découvrez l'influence de nos mouvements sur nos émotions."
+experience_2 = "Découvrez l'influence de pensées sur nos mouvements."
+
+[mouvements_types]
+titre = "Définir mes ressources corporelles"
+corps = """
+Il y a deux types de mouvements :
+
+- **les macro-mouvements** : ce sont des grands mouvements, visibles par tous, comme les mouvements de yoga ou de tai-chi. Ex : bouger les bras comme le battement d'ailes de l'aigle.
+- **les micro-mouvements** : ce sont des petits mouvements, à peine perceptibles pour les autres. Ex : bouger ses doigts les uns après les autres.
+"""
+panier = "Nous allons maintenant faire un panier aux idées pour vous aider à définir vos mouvements macro et micro."
+temoignage = "Avant, vous pouvez écouter le témoignage de Sophie."
+
+[mouvements_ia]
+titre = "Définir mes ressources corporelles"
+corps = """
+Voici quelques idées que nous avons trouvées spécialement pour vous, afin de vous faire penser à votre motto en mouvement.
+
+Qu'en pensez-vous ?
+
+Cliquez sur les mouvements qui vous plaisent le plus (1 au minimum dans chaque colonne)
+"""
+colonne_macro = "Mouvements macro"
+colonne_micro = "Mouvements micro"
+erreur_minimum = "Sélectionnez au moins un mouvement dans chaque colonne."
+avertissement = "Ces mouvements sont des propositions : adaptez-les à votre condition physique et à vos possibilités."
+
+[mouvements_libres]
+titre = "Définir mes ressources corporelles"
+corps = """
+Merci pour vos réponses.
+
+Avez-vous d'autres idées de mouvements, petits ou grands, pour penser à votre motto ?
+
+Écrivez dans les espaces ci-dessous
+"""
+types = ["Macro", "Micro"]
+
+[mouvements_recap]
+titre = "Définir mes ressources corporelles"
+corps = "Finalement, voici les mouvements qui pourraient vous être utiles."
+action = """
+Maintenant, en action ! Mettez concrètement en place ces ressources corporelles dans les prochains jours !
+"""
+aucun = "Aucun mouvement sélectionné."
+
+[sociales_theorie]
+titre = "Définir mes ressources sociales"
+corps = """
+Les personnes font partie des ressources du ZRM©.
+
+**Une ressource sociale = toute personne qui contribue, consciemment ou inconsciemment à la mise en oeuvre de votre motto.**
+
+En effet, les personnes qui vous entourent, lorsque vous les avez identifiées comme ressources, peuvent vous aider.
+"""
+types_intro = """
+Il existe 3 types de personnes ressources, qui peuvent vous aider de manière différentes pour activer votre motto.
+
+Cliquez sur chacune des personnes ci-dessous pour en savoir plus.
+"""
+secrete_titre = "La « secrète »"
+secrete = """
+La « secrète » : c'est une personne inspirante qui, sans le savoir, incarne pour vous une attitude qui rappelle votre motto.
+
+Ex : vous voulez incarner le calme pendant une réunion qui est susceptible de vous tendre. Vous vous asseyez à côté d'une personne calme, qui n'a aucune notion du ZRM©.
+"""
+strategique_titre = "La « stratégique »"
+strategique = """
+La « stratégique » : la personne a reçu une instruction de votre part pour agir d'une certaine façon, sans connaître le ZRM©.
+
+Ex : vous demandez à une amie qui ne connaît pas le ZRM© de vous envoyer votre image (associée au motto) par message, 5 min avant cette réunion susceptible de vous tendre.
+"""
+initiee_titre = "L'« initiée »"
+initiee = """
+L'« initiée » : la personne connaît le ZRM© et vous lui avez demandé de vous apporter un soutien direct dans une situation particulière.
+
+Ex : vous demandez à une collègue qui connait le ZRM©, de brandir un de vos aide-mémoire (ex : un crayon marron pour faire penser à l'aigle), si elle s'aperçoit que la colère monte graduellement en vous pendant la réunion ; ce qui vous permettra de vous reconnecter à vous-même et de retrouver le calme pendant cette réunion.
+"""
+
+[sociales_saisie]
+titre = "Définir mes ressources sociales"
+corps = """
+À vous !
+
+Réfléchissez aux personnes que vous pouvez mobiliser pour activer votre motto.
+
+Écrivez dans l'espace ci-dessous vos idées.
+"""
+theorie_titre = "Revoir la théorie"
+complement_titre = "Visualiser le contenu complémentaire"
+complement = """
+**Les ressources sociales**
+
+La « secrète » : la personne ne sait même pas qu'elle est une ressource pour vous.
+
+La « stratégique » : la personne a reçu une instruction de votre part pour agir d'une certaine façon, sans connaître le ZRM©.
+
+L'« initiée » : la personne connaît le ZRM© et vous lui avez demandé de vous soutenir d'une façon particulière.
+"""
+
+[sociales_action]
+titre = "Définir mes ressources sociales"
+corps = """
+Maintenant, en action ! Activez au besoin ces ressources sociales dans les prochains jours !
+"""
+
+# ------------------------------------------------------------------ Récapitulatif de fin de parcours
+# Écran propre au POC (absent des PowerPoint).
+[recap]
+titre = "Mon récapitulatif"
+corps = "Voici l'ensemble de vos choix et des ressources que vous avez identifiées."
+telecharger = "Télécharger mon récapitulatif"
+aide_telechargement = "Le fichier s'ouvre dans votre navigateur ; vous pouvez l'imprimer ou l'enregistrer en PDF depuis celui-ci."
+fichier = "mon_recapitulatif_zrm.html"
+titre_document = "Mon récapitulatif ZRM"
+image = "Mon image"
+image_alt = "L'image que j'ai choisie"
+raisons = "Mes raisons d'avoir choisi cette image"
+mots = "Mes mots associés à l'image"
+mots_complementaires = "Mes mots complémentaires"
+reflexion = "Pourquoi ai-je réagi si positivement à mes idées favorites ?"
+souhait = "Mon souhait"
+motto = "Mon motto"
+motto_non_conforme = "Ce motto ne respecte pas encore tous les critères de formulation."
+aide_fixes = "Mes aide-mémoire fixes"
+aide_mobiles = "Mes aide-mémoire mobiles"
+mouv_macro = "Mes mouvements macro"
+mouv_micro = "Mes mouvements micro"
+vide = "Non renseigné"
+
+# ------------------------------------------------------------------ Transcriptions écrites du témoignage de Sophie
+# Source : document « Témoignage Sophie » du Drive (reprise telle quelle). Alternative écrite aux enregistrements audio
+# (accessibilité : personnes sourdes ou malentendantes).
+[transcriptions]
+image = """
+« D'habitude, quand ça ne va pas, je me ferme totalement et je rentre dans ma coquille. Mais là, en voyant cette image de géraniums, ça a fait « clic » tout de suite. Sans réfléchir, sans analyser, j'ai vraiment laissé parler mes tripes. J'ai été attirée de façon instinctive par ce rouge éclatant et ce bois chaud. C'est tout ce que je voulais incarner comme attitude : une idée d'ouverture vers les autres, de la joie. Ça m'a apporté un truc réconfortant, une sensation super chaleureuse. Franchement, cette fenêtre ouverte avec ses fleurs, ça m'a fait un bien fou. »
+"""
+idees = """
+« En parcourant les idées proposées par les autres, ces mots en vert ont immédiatement déclenché un déclic :
+
+- Chaleur et Lumière : ça fait direct écho au rouge des géraniums et au bois ensoleillé, ça me réchauffe le cœur.
+- Se sentir chez soi et Sérénité : c'est l'apaisement que m'inspire cette fenêtre ouverte, la sécurité dont j'ai besoin pour ne plus me renfermer.
+- Authentique et Bois : ça me donne une sensation d'ancrage, de quelque chose de solide et de vrai.
+- Fraîcheur intérieure et Fleuri : c'est toute la vitalité des fleurs, ce souffle nouveau qui me donne de l'énergie.
+- Force et Amour : ce sont les ressources profondes que je veux faire vibrer pour aller vers les autres.
+
+Chacun de ces mots me procure une sensation 100 % positive, m'apaise et me porte. C'est tout ce que je veux être. »
+"""
+souhait = """
+« J'ai formulé ce souhait parce que, plus jeune, je ne me posais pas mille questions : j'étais spontanée, joyeuse et naturellement ouverte aux autres. Avec les aléas de la vie, j'ai pris l'habitude de me protéger en me fermant dès qu'une difficulté apparaît. Reconnecter avec cette petite fille, ce n'est pas régresser, c'est aller chercher l'énergie brute, la légèreté et la confiance que j'avais alors. En y associant la force et la maturité que j'ai développées aujourd'hui, je me donne toutes les chances de m'épanouir pleinement, sans plus jamais me cacher. »
+"""
+motto = """
+« J'ai choisi ce motto parce qu'il fait directement écho aux mots qui m'ont marquée dans le panier à idées. "Avec tendresse", c'est ma façon de cesser d'être dure envers moi-même quand je me sens vulnérable. "Cultiver mes valeurs", c'est l'ancrage solide, cet aspect authentique et vrai que m'évoquait le bois de la fenêtre. Et enfin, "s'ouvrir à la douceur de la vie", c'est le pas décisif pour sortir de ma coquille : j'ouvre mes volets à la chaleur, à la lumière et à la joie, exactement comme ces géraniums qui s'épanouissent. »
+"""
+aide_memoire = """
+« Pour faire vivre mon motto au quotidien, j'ai mis en place des aide-mémoire autour de moi :
+
+D'une part, en aide-mémoire fixe, j'ai mis la photo de la fenêtre aux géraniums en fond d'écran d'ordinateur pour penser à m'ouvrir dès le matin. Sur le frigo, j'ai aussi collé un mot doux avec cette couleur rouge éclatante.
+
+Et en aide-mémoire mobile, j'ai accroché un pompon rouge vif et doux à mes clés. Et mon mot de passe de session est fortement inspiré de mon motto… pour me le répéter à chaque fois que je le tape. »
+"""
+mouvements = """
+« Pour ancrer physiquement mon motto, j'utilise mon corps :
+
+J'ai un grand mouvement que j'aime bien : quand je sens que je me ferme, je me lève, j'ouvre grands les bras et j'écarte les jambes. Je prends de la place.
+
+Et puis j'ai un mouvement plus discret. J'accroche mes pouces entre eux. C'était mon geste refuge quand j'étais petite. Ça me ramène directement à ma spontanéité d'enfant et ça m'apaise instantanément. »
+"""
