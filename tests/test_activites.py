@@ -68,48 +68,58 @@ def test_preparer_image():
         activites.preparer_image(b"pas une image")
 
 
-# ------------------------------------------------------------------ lecture du souhait
+# ------------------------------------------------------------------ lecture des champs libres
 def test_lecture_de_saisie_renvoie_seulement_le_drapeau_de_detresse(sequence):
     sequence.file = [reponse("lecture_saisie")]
-    res = activites.lire_saisie(FAUX, champ="souhait", texte="retrouver du calme")
+    res = activites.lire_saisie(FAUX, textes={"souhait": "retrouver du calme"})
     assert res.activite == "lecture_saisie" and res.donnees == {} and res.detresse is False
     envoye = sequence.appels[0]["messages"]
     assert "<souhait>retrouver du calme</souhait>" in str(envoye[-1]["content"])
     assert "detresse" in envoye[0]["content"] and "saisie_apprenant" in envoye[0]["content"]
 
 
-def test_lecture_des_raisons_du_choix_d_image(sequence):
+def test_lecture_de_plusieurs_champs_en_un_seul_appel(sequence):
     sequence.file = [reponse("lecture_saisie", detresse=True)]
-    res = activites.lire_saisie(FAUX, champ="raisons_image", texte="Cette image me rappelle que je veux disparaître")
-    assert res.detresse is True
-    assert "<raisons_image>Cette image me rappelle" in str(sequence.appels[0]["messages"][-1]["content"])
+    res = activites.lire_saisie(FAUX, textes={"raisons_image": "Elle m'apaise",
+                                              "reflexion": "Parce que plus rien ne compte"})
+    assert res.detresse is True and len(sequence.appels) == 1
+    contenu = str(sequence.appels[0]["messages"][-1]["content"])
+    assert "<raisons_image>Elle m'apaise</raisons_image>" in contenu and "<reflexion>Parce que" in contenu
+
+
+@pytest.mark.parametrize("champ", activites.CHAMPS_LUS)
+def test_chaque_champ_libre_est_decrit_dans_le_prompt_de_lecture(champ):
+    import prompts
+    assert f"`{champ}`" in prompts.construire_system("saisie_lecture")
 
 
 def test_lecture_de_saisie_texte_long_envoye_en_entier(sequence):
     sequence.file = [reponse("lecture_saisie")]
     texte = "a " * 450 + "je veux disparaître"                      # 900 caractères : la fin ne doit pas être coupée
-    activites.lire_saisie(FAUX, champ="raisons_image", texte=texte)
+    activites.lire_saisie(FAUX, textes={"reflexion": texte})
     assert "disparaître" in str(sequence.appels[0]["messages"][-1]["content"])
 
 
-def test_lecture_de_saisie_champ_inconnu():
+def test_lecture_de_saisie_champ_inconnu_ou_vide():
     with pytest.raises(ValueError):
-        activites.lire_saisie(FAUX, champ="motto", texte="x")
+        activites.lire_saisie(FAUX, textes={"motto": "x"})
+    with pytest.raises(ValueError):
+        activites.lire_saisie(FAUX, textes={"souhait": "  "})
 
 
-def test_lecture_du_souhait_detresse_signalee_par_le_modele(sequence):
+def test_lecture_detresse_signalee_par_le_modele(sequence):
     sequence.file = [reponse("lecture_saisie", detresse=True)]
-    assert activites.lire_saisie(FAUX, champ="souhait", texte="que tout s'arrête").detresse is True
+    assert activites.lire_saisie(FAUX, textes={"souhait": "que tout s'arrête"}).detresse is True
 
 
-def test_lecture_du_souhait_detresse_signalee_par_le_filet_de_mots_cles(sequence):
+def test_lecture_detresse_signalee_par_le_filet_de_mots_cles(sequence):
     sequence.file = [reponse("lecture_saisie", detresse=False)]
-    assert activites.lire_saisie(FAUX, champ="souhait", texte="j'ai envie d'en finir").detresse is True
+    assert activites.lire_saisie(FAUX, textes={"idees_mouvements": "j'ai envie d'en finir"}).detresse is True
 
 
-def test_lecture_du_souhait_hors_contrat_relancee(sequence):
+def test_lecture_hors_contrat_relancee(sequence):
     sequence.file = [reponse("lecture_saisie", detresse="oui"), reponse("lecture_saisie")]
-    res = activites.lire_saisie(FAUX, champ="souhait", texte="calme")
+    res = activites.lire_saisie(FAUX, textes={"souhait": "calme"})
     assert len(sequence.appels) == 2 and res.detresse is False
 
 

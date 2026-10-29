@@ -622,13 +622,13 @@ def jusqu_au_souhait_saisi(st, p, souhait):
 def test_le_souhait_est_lu_par_l_ia_une_seule_fois_par_texte(st, p, monkeypatch):
     appels = []
     reel = activites.lire_saisie
-    monkeypatch.setattr(activites, "lire_saisie", lambda c, **kw: (appels.append(kw["texte"]), reel(c, **kw))[1])
+    monkeypatch.setattr(activites, "lire_saisie", lambda c, **kw: (appels.append(kw["textes"]), reel(c, **kw))[1])
     jusqu_au_souhait_saisi(st, p, "retrouver du calme")
     suivant(st, p)
-    assert etat(st).ecran == "besoins_conclusion" and appels == ["retrouver du calme"]
+    assert etat(st).ecran == "besoins_conclusion" and appels == [{"souhait": "retrouver du calme"}]
     tourner(st, p, "prec_besoins_conclusion")
     suivant(st, p)                                            # même texte : pas de nouvel appel
-    assert appels == ["retrouver du calme"] and etat(st).ecran == "besoins_conclusion"
+    assert appels == [{"souhait": "retrouver du calme"}] and etat(st).ecran == "besoins_conclusion"
     tourner(st, p, "prec_besoins_conclusion")
     saisir(st, "w_souhait", "retrouver du calme et de la joie")
     suivant(st, p)
@@ -752,10 +752,10 @@ def jusqu_aux_raisons(st, p, raisons):
 def test_raisons_lues_par_l_ia_une_seule_fois_par_texte_avec_le_bon_champ(st, p, monkeypatch):
     appels = []
     reel = activites.lire_saisie
-    monkeypatch.setattr(activites, "lire_saisie", lambda c, **kw: (appels.append((kw["champ"], kw["texte"])), reel(c, **kw))[1])
+    monkeypatch.setattr(activites, "lire_saisie", lambda c, **kw: (appels.append(kw["textes"]), reel(c, **kw))[1])
     jusqu_aux_raisons(st, p, "Elle m'apaise")
     suivant(st, p)
-    assert etat(st).ecran == "mots" and appels == [("raisons_image", "Elle m'apaise")]
+    assert etat(st).ecran == "mots" and appels == [{"raisons_image": "Elle m'apaise"}]
     tourner(st, p, "prec_mots")
     suivant(st, p)                                            # même texte : pas de nouvel appel
     assert etat(st).ecran == "mots" and len(appels) == 1
@@ -811,3 +811,77 @@ def test_panne_ia_a_la_lecture_des_raisons_bloque_avec_reessayer(st, p, monkeypa
     marche["ok"] = True
     suivant(st, p)
     assert etat(st).ecran == "mots"
+
+
+# ------------------------------------------------------------------ lecture systématique de tous les champs libres
+def test_tous_les_ecrans_a_champs_libres_sont_lus_par_l_ia(p):
+    sans_lecture = {"motto_propositions", "motto_redaction", "motto_feedback",      # vérification du motto : drapeau déjà renvoyé
+                    "aide_ia", "mouvements_ia"}                                      # générations : saisies déjà envoyées au modèle
+    assert set(p.ECRANS_AVEC_SAISIE) - sans_lecture == set(p.ECRANS_LUS)
+
+
+@pytest.mark.parametrize("ecran, saisies, attendu", [
+    ("mots_complementaires", {"w_mots_libres_0": "lumière", "w_mots_libres_2": "mer"},
+     {"mots_complementaires": "lumière, mer"}),
+    ("reflexion", {"w_reflexion": "Parce que cela m'apaise"}, {"reflexion": "Parce que cela m'apaise"}),
+    ("aide_libres", {"w_libre_aide_0": "un galet", "w_libre_aide_1": "une odeur de pin"},
+     {"idees_aide_memoire": "un galet; une odeur de pin"}),
+    ("mouvements_libres", {"w_libre_mouv_0": "ouvrir les bras"}, {"idees_mouvements": "ouvrir les bras"}),
+])
+def test_champs_libres_lus_par_l_ia_au_suivant(st, p, monkeypatch, ecran, saisies, attendu):
+    appels = []
+    reel = activites.lire_saisie
+    monkeypatch.setattr(activites, "lire_saisie", lambda c, **kw: (appels.append(kw["textes"]), reel(c, **kw))[1])
+    jusqu_au_motto(st, p)
+    appels.clear()                                           # les lectures des écrans déjà traversés ne comptent pas
+    etat(st).ecran = ecran
+    for cle, valeur in saisies.items():
+        saisir(st, cle, valeur)
+    tourner(st, p)
+    ordre = p.ORDRE
+    suivant(st, p)
+    assert appels == [attendu]
+    assert etat(st).ecran == ordre[ordre.index(ecran) + 1]
+
+
+@pytest.mark.parametrize("ecran, saisies", [
+    ("mots_complementaires", {"w_mots_libres_0": "disparaître"}),
+    ("reflexion", {"w_reflexion": "Parce que plus rien ne compte"}),
+    ("aide_libres", {"w_libre_aide_0": "une corde"}),
+    ("mouvements_libres", {"w_libre_mouv_0": "me faire disparaître"}),
+])
+def test_detresse_reperee_par_l_ia_sur_chaque_champ_libre(st, p, monkeypatch, ecran, saisies):
+    import simulation
+    jusqu_au_motto(st, p)
+    monkeypatch.setitem(simulation._DONNEES, "lecture_saisie", {"detresse": True})
+    etat(st).ecran = ecran
+    for cle, valeur in saisies.items():
+        saisir(st, cle, valeur)
+    ordre = p.ORDRE
+    suivant(st, p)
+    assert etat(st).ecran == ecran
+    w = st.textes("warning")
+    assert "15" in w and "3114" in w and w.count("3114") == 1
+    suivant(st, p)
+    assert etat(st).ecran == ordre[ordre.index(ecran) + 1]
+
+
+def test_champs_libres_vides_aucun_appel(st, p, monkeypatch):
+    appels = []
+    reel = activites.lire_saisie
+    monkeypatch.setattr(activites, "lire_saisie", lambda c, **kw: (appels.append(kw), reel(c, **kw))[1])
+    jusqu_au_motto(st, p)
+    appels.clear()
+    for ecran in ("mots_complementaires", "reflexion", "aide_libres", "mouvements_libres"):
+        etat(st).ecran = ecran
+        suivant(st, p)
+        assert etat(st).ecran != ecran
+    assert appels == []
+
+
+def test_message_de_detresse_affiche_une_seule_fois_par_ecran(st, p):
+    jusqu_au_motto(st, p)
+    etat(st).ecran = "reflexion"
+    saisir(st, "w_reflexion", "j'ai envie d'en finir")
+    tourner(st, p)
+    assert st.textes("warning").count("3114") == 1

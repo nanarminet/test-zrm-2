@@ -10,7 +10,7 @@ et « 4. Identification des ressources ») :
 
 | Étape | Contenu | IA |
 |---|---|---|
-| 1. Découverte de ses besoins | consignes du choix d'image (premier écran), choix de l'image parmi 45 (5 par ligne, avec confirmation), raisons, mots associés à l'image (liste de cases à cocher à droite de l'image) + mots libres, réflexion, souhait | **lecture des raisons et du souhait** (repérage d'une détresse uniquement, aucun texte généré) |
+| 1. Découverte de ses besoins | consignes du choix d'image (premier écran), choix de l'image parmi 45 (5 par ligne, avec confirmation), raisons, mots associés à l'image (liste de cases à cocher à droite de l'image) + mots libres, réflexion, souhait | **lecture des champs libres** (repérage d'une détresse uniquement, aucun texte généré) |
 | 2. Formulation du motto | infographie, synthèse, **5 phrases dont les verbes, noms communs, noms propres et adjectifs sont cliquables**, rédaction avec **composeur de phrase** (glisser-déposer), **vérification** (10 critères), amélioration, synthèse finale | phrases du motto, vérification du motto |
 | 3. Identification des ressources | aide-mémoire, ressources corporelles (mouvements) | **aide-mémoire** (4 fixes + 4 mobiles), **mouvements** (3 macro + 3 micro) |
 | Récapitulatif | tous les choix et les ressources associées, fichier HTML à télécharger (image intégrée, imprimable en PDF depuis le navigateur) | aucune |
@@ -38,11 +38,15 @@ texte libre avant le premier mot et après chaque mot, et un aperçu de la phras
 champ de rédaction » remplace le contenu du champ libre. Si le paquet n'est pas installé, les mots restent dans l'ordre de la
 sélection (message affiché). Le glisser-déposer n'est pas utilisable au clavier : les zones de texte libre le sont.
 
-**Lecture des textes libres** : au clic sur « Suivant », l'IA lit le **souhait** et les **raisons du choix d'image** (un
-appel par texte, relancé seulement si le texte change ; rien n'est lu si le champ des raisons est vide) et ne renvoie que le
-drapeau de détresse. Si elle (ou le filet de mots-clés) en repère une, le message de détresse (15 / 3114) s'affiche sous le
-champ et la personne reste sur l'écran ; un second clic sur « Suivant », avec le même texte, la laisse continuer. Les
-autres champs libres (mots complémentaires, réflexion) ne passent que par le filet de mots-clés.
+**Lecture des textes libres (détresse)** : sur tous les écrans à champ libre, l'IA lit les textes au clic sur « Suivant » :
+raisons du choix d'image, mots complémentaires, « Pourquoi ai-je réagi si positivement à mes idées favorites ? »,
+souhait, idées libres d'aide-mémoire, idées libres de mouvements (`parcours.ECRANS_LUS`). Un seul appel par écran (tous
+les champs de l'écran ensemble), relancé seulement si un texte change ; rien n'est lu si les champs sont vides. Le modèle ne
+renvoie que le drapeau de détresse. Si elle (ou le filet de mots-clés) en repère une, le message (15 / 3114) s'affiche et la
+personne reste sur l'écran ; un second clic sur « Suivant », sans modifier les textes, la laisse continuer. Le motto
+(rédaction et amélioration) est couvert par l'appel de vérification, et les écrans de génération reçoivent déjà ces
+saisies : leur réponse porte le même drapeau. Un test vérifie que tout nouvel écran à champ libre est dans l'une de ces
+catégories.
 
 **Boutons de validation** : Streamlit n'envoie le contenu d'un champ texte qu'une fois la saisie validée (clic ailleurs
 ou Ctrl+Entrée), pas à chaque lettre. Un bouton ne peut donc pas suivre la frappe pour passer de grisé à actif. Les boutons
@@ -186,7 +190,7 @@ les appels Streamlit n'ont pas été exécutés pour de vrai lors de la construc
 | Mouvements | Avertissement fixe « propositions à adapter à votre condition physique » | Consultantes |
 | Mots cliquables | Verbes, noms communs, noms propres, adjectifs ; adverbes exclus | Consultantes |
 | Critère 4 (invitation) | « Je choisis de… » et toute attitude à vivre à la 1re personne sont admis ; refus seulement pour un état constaté (« Je suis calme ») ou un ordre. Les débuts de phrase du livret + « Je choisis de » sont admis d'office par le code | Consultantes |
-| Détresse dans le souhait et les raisons | Message affiché, la personne peut continuer au second clic | Vinatier / consultantes |
+| Détresse dans tous les champs libres | Message affiché, la personne peut continuer au second clic | Vinatier / consultantes |
 
 ## Limites connues
 

@@ -137,19 +137,24 @@ def _detresse(reponse: llm.Reponse, *saisies: str) -> bool:
 # --------------------------------------------------------------------------------------
 # 0. Lecture d'un texte libre (souhait, raisons du choix d'image) : repérer une détresse
 # --------------------------------------------------------------------------------------
-CHAMPS_LUS = ("souhait", "raisons_image")
+CHAMPS_LUS = ("raisons_image", "mots_complementaires", "reflexion", "souhait", "idees_aide_memoire",
+              "idees_mouvements")
 
 
-def lire_saisie(config: llm.Config, *, champ: str, texte: str) -> ResultatActivite:
-    """Le modèle lit le texte et ne renvoie que le drapeau de détresse (le code ajoute son filet de mots-clés)."""
-    if champ not in CHAMPS_LUS:
-        raise ValueError(f"champ inconnu : {champ}")
+def lire_saisie(config: llm.Config, *, textes: dict[str, str]) -> ResultatActivite:
+    """Le modèle lit les textes libres d'un écran et ne renvoie que le drapeau de détresse.
+
+    `textes` : {nom du champ (CHAMPS_LUS): texte}. Le code ajoute son filet de mots-clés.
+    """
+    inconnus = [c for c in textes if c not in CHAMPS_LUS]
+    if inconnus or not any(t.strip() for t in textes.values()):
+        raise ValueError(f"champs inconnus ou textes vides : {inconnus or list(textes)}")
     journal: list[dict] = []
-    user = llm.message_utilisateur(prompts.formater_saisies(**{champ: texte})
-                                   + "\nLis ce texte et renseigne uniquement `detresse` (JSON uniquement).")
+    user = llm.message_utilisateur(prompts.formater_saisies(**textes)
+                                   + "\nLis ces textes et renseigne uniquement `detresse` (JSON uniquement).")
     rep, alertes = _executer(config, activite="lecture_saisie", user_msg=user, evaluer=lambda d: ([], []),
                              temperature=0.0, max_tokens=300, journal=journal)
-    return ResultatActivite("lecture_saisie", {}, _detresse(rep, texte), alertes, journal)
+    return ResultatActivite("lecture_saisie", {}, _detresse(rep, *textes.values()), alertes, journal)
 
 
 # --------------------------------------------------------------------------------------

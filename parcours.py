@@ -80,6 +80,10 @@ ECRANS_AVEC_SAISIE = {"raisons_image", "mots_complementaires", "reflexion", "sou
                       "motto_redaction", "motto_feedback", "aide_ia", "aide_libres", "mouvements_ia",
                       "mouvements_libres"}
 
+# Écrans à champs libres lus par l'IA (détresse) au clic sur « Suivant ».
+# Les écrans du motto n'en font pas partie : la vérification du motto renvoie déjà ce drapeau.
+ECRANS_LUS = ("raisons_image", "mots_complementaires", "reflexion", "souhait", "aide_libres", "mouvements_libres")
+
 _config: llm.Config | None = None      # fixée par executer()
 
 
@@ -90,7 +94,9 @@ def _defauts() -> dict:
          "motto": "", "res_verdict": None, "version_amelio": 0,
          "res_aide": None, "sig_aide": None, "res_mouv": None, "sig_mouv": None,
          "w_raisons": "", "w_reflexion": "",
-         "w_souhait": "", "w_motto_saisie": "", "lu_souhait": "", "lu_raisons_image": ""}
+         "w_souhait": "", "w_motto_saisie": ""}
+    for ecran in ECRANS_LUS:
+        d[f"lu_{ecran}"] = {}
     for i in range(NB_LIBRES):
         d[f"w_mots_libres_{i}"] = ""
         d[f"w_libre_aide_{i}"] = ""
@@ -235,9 +241,16 @@ def panneaux_motto() -> None:
         synthese()
 
 
+_detresse_affichee = False       # le message ne s'affiche qu'une fois par exécution du script
+
+
 def afficher_detresse() -> None:
+    global _detresse_affichee
+    if _detresse_affichee:
+        return
     if S.ecran in ECRANS_AVEC_SAISIE and (S.detresse_ia or checks.detecter_detresse(*textes_libres())):
         st.warning(textes.DETRESSE)
+        _detresse_affichee = True
 
 
 def nav(*, suivant: bool = True, libelle: str | None = None, precedent: bool = True, sur_suivant=None,
@@ -247,6 +260,7 @@ def nav(*, suivant: bool = True, libelle: str | None = None, precedent: bool = T
     `sur_suivant` : fonction appelée au clic sur le bouton de droite, à la place de l'écran suivant
     (vérification du motto, par exemple). Sans lui, le bouton passe à l'écran suivant.
     """
+    afficher_detresse()          # filet commun : tout écran à saisie libre affiche le message si besoin
     st.write("")
     gauche, droite = st.columns(2)
     with gauche:
@@ -255,6 +269,8 @@ def nav(*, suivant: bool = True, libelle: str | None = None, precedent: bool = T
     with droite:
         if dernier:
             return
+        if sur_suivant is None and S.ecran in ECRANS_LUS:
+            sur_suivant = lire_puis_avancer
         if sur_suivant is None:
             st.button(libelle or G["suivant"], key=f"suiv_{S.ecran}", type="primary", disabled=not suivant,
                       on_click=avancer)
@@ -350,18 +366,39 @@ def ecran_choix_image() -> None:
     nav(suivant=bool(S.image_id))
 
 
-def lire_puis_avancer(champ: str, texte: str) -> None:
-    """L'IA lit le texte libre (détresse) avant de passer à l'écran suivant.
+def textes_a_lire(ecran: str) -> dict[str, str]:
+    """Champs libres non vides de l'écran, sous le nom que lit `activites.lire_saisie`."""
+    if ecran == "raisons_image":
+        textes_ecran = {"raisons_image": S.w_raisons}
+    elif ecran == "mots_complementaires":
+        textes_ecran = {"mots_complementaires": ", ".join(mots_complementaires())}
+    elif ecran == "reflexion":
+        textes_ecran = {"reflexion": S.w_reflexion}
+    elif ecran == "souhait":
+        textes_ecran = {"souhait": S.w_souhait}
+    elif ecran == "aide_libres":
+        textes_ecran = {"idees_aide_memoire": "; ".join(t for t, _ in libres("libre_aide"))}
+    elif ecran == "mouvements_libres":
+        textes_ecran = {"idees_mouvements": "; ".join(t for t, _ in libres("libre_mouv"))}
+    else:
+        return {}
+    return {nom: t.strip() for nom, t in textes_ecran.items() if t.strip()}
 
-    Un appel par texte différent. Si une détresse est repérée (modèle ou mots-clés), le message s'affiche
-    sur l'écran et on y reste ; un nouveau clic avec le même texte laisse continuer.
+
+def lire_puis_avancer() -> None:
+    """L'IA lit les champs libres de l'écran (détresse) avant de passer à l'écran suivant.
+
+    Un appel par contenu différent, tous les champs de l'écran dans le même appel. Si une détresse est repérée
+    (modèle ou mots-clés), le message s'affiche sur l'écran et on y reste ; un nouveau clic, sans modification
+    des textes, laisse continuer. Rien à lire : on avance directement.
     """
-    if S[f"lu_{champ}"] != texte:
-        res, erreur = appel(G["attente_lecture"], activites.lire_saisie, champ=champ, texte=texte)
+    textes_ecran = textes_a_lire(S.ecran)
+    if textes_ecran and S[f"lu_{S.ecran}"] != textes_ecran:
+        res, erreur = appel(G["attente_lecture"], activites.lire_saisie, textes=textes_ecran)
         if res is None:
             erreur_ia(erreur)
             return
-        S[f"lu_{champ}"] = texte
+        S[f"lu_{S.ecran}"] = textes_ecran
         if res.detresse:
             st.rerun()
     avancer()
@@ -374,15 +411,7 @@ def ecran_raisons_image() -> None:
     md("raisons_image")
     st.text_area(C["raisons_image"]["champ"], key="w_raisons", max_chars=1000)
     afficher_detresse()
-
-    def suivant() -> None:
-        texte = S.w_raisons.strip()
-        if texte:
-            lire_puis_avancer("raisons_image", texte)
-        else:                                  # rien à lire : on avance
-            avancer()
-            st.rerun()
-    nav(sur_suivant=suivant)
+    nav()
 
 
 def ecran_mots() -> None:
@@ -452,7 +481,7 @@ def ecran_souhait() -> None:
         if not texte:
             st.warning(c["erreur_vide"])
             return
-        lire_puis_avancer("souhait", texte)
+        lire_puis_avancer()
     afficher_detresse()
     nav(sur_suivant=suivant)
 
@@ -902,8 +931,9 @@ def barre_laterale() -> None:
 
 def executer(config: llm.Config) -> None:
     """Point d'entrée appelé par app.py à chaque exécution du script."""
-    global _config
+    global _config, _detresse_affichee
     _config = config
+    _detresse_affichee = False
     init_etat()
     barre_laterale()
     if S.ecran in LARGE:
