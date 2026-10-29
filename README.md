@@ -48,6 +48,12 @@ personne reste sur l'écran ; un second clic sur « Suivant », sans modifier le
 saisies : leur réponse porte le même drapeau. Un test vérifie que tout nouvel écran à champ libre est dans l'une de ces
 catégories.
 
+**Portée du message** : il n'apparaît que sur l'écran où une saisie l'a déclenché (lecture de l'IA, vérification du motto ou
+filet de mots-clés sur les champs de cet écran) et disparaît dès qu'on quitte l'écran. Il ne suit pas la personne sur les
+écrans suivants. Les générations (phrases, aide-mémoire, mouvements) ne le déclenchent pas : elles ne relisent que des
+textes déjà lus plus tôt. Revenir sur un écran dont le texte contient encore un mot-clé le réaffiche (le filet regarde
+l'écran affiché), mais l'IA n'est pas rappelée tant que le texte n'a pas changé.
+
 **Boutons de validation** : Streamlit n'envoie le contenu d'un champ texte qu'une fois la saisie validée (clic ailleurs
 ou Ctrl+Entrée), pas à chaque lettre. Un bouton ne peut donc pas suivre la frappe pour passer de grisé à actif. Les boutons
 « Suivant » du souhait et « Vérifier mon motto » sont donc toujours actifs (rouges) ; si le champ est vide, un message

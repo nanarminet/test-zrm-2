@@ -420,10 +420,21 @@ def test_panne_ia_sur_les_phrases_puis_reprise(st, p, monkeypatch):
     assert etat(st).res_phrases is not None and st.boutons["suiv_motto_propositions"] is False
 
 
-def test_detresse_dans_le_souhait_affiche_15_et_3114_sur_les_ecrans_ia(st, p):
-    jusqu_au_motto(st, p, souhait="j'ai envie d'en finir")
+def test_detresse_dans_le_souhait_affichee_sur_l_ecran_du_souhait_seulement(st, p):
+    jusqu_au_souhait_saisi(st, p, "j'ai envie d'en finir")
+    tourner(st, p)
     w = st.textes("warning")
     assert "15" in w and "3114" in w and "117" not in w
+    suivant(st, p)                                     # 1er clic : message ; 2e clic : on continue
+    assert etat(st).ecran == "souhait"
+    suivant(st, p)
+    assert etat(st).ecran == "besoins_conclusion" and "3114" not in st.textes("warning")
+    for _ in range(12):                                # écrans suivants, jusqu'aux phrases du motto (appel IA inclus)
+        if etat(st).ecran == "motto_redaction":
+            break
+        suivant(st, p)
+        assert "3114" not in st.textes("warning"), etat(st).ecran
+    assert etat(st).ecran == "motto_redaction"         # les phrases ont été générées avec le souhait : pas de message
 
 
 def test_pas_de_message_de_detresse_dans_le_cas_normal(st, p):
@@ -885,3 +896,49 @@ def test_message_de_detresse_affiche_une_seule_fois_par_ecran(st, p):
     saisir(st, "w_reflexion", "j'ai envie d'en finir")
     tourner(st, p)
     assert st.textes("warning").count("3114") == 1
+
+
+def test_le_signal_de_detresse_ne_suit_pas_la_personne_sur_les_ecrans_suivants(st, p, monkeypatch):
+    import simulation
+    monkeypatch.setitem(simulation._DONNEES, "lecture_saisie", {"detresse": True})
+    jusqu_aux_raisons(st, p, "Elle me rappelle que plus rien ne compte")
+    suivant(st, p)
+    assert etat(st).ecran == "raisons_image" and "3114" in st.textes("warning")
+    suivant(st, p)                                     # même texte : on continue
+    assert etat(st).ecran == "mots" and "3114" not in st.textes("warning")
+    assert etat(st).detresse_ia is False and etat(st).detresse_sur == ""
+    monkeypatch.setitem(simulation._DONNEES, "lecture_saisie", {"detresse": False})
+    cocher_mots(st, 2)
+    suivant(st, p)                                     # mots_complementaires
+    assert etat(st).ecran == "mots_complementaires" and "3114" not in st.textes("warning")
+
+
+def test_un_mot_cle_ecrit_plus_tot_ne_declenche_pas_le_message_sur_un_autre_ecran(st, p):
+    jusqu_aux_raisons(st, p, "j'ai envie d'en finir")
+    tourner(st, p)
+    assert "3114" in st.textes("warning")
+    suivant(st, p)
+    suivant(st, p)
+    assert etat(st).ecran == "mots"
+    tourner(st, p)
+    assert "3114" not in st.textes("warning")
+    cocher_mots(st, 2)
+    for _ in range(10):
+        if etat(st).ecran == "souhait":
+            break
+        suivant(st, p)
+        assert "3114" not in st.textes("warning"), etat(st).ecran
+    assert etat(st).ecran == "souhait"
+
+
+def test_message_de_detresse_du_motto_visible_sur_la_page_de_retour_puis_efface(st, p, monkeypatch):
+    jusqu_a_la_redaction(st, p, motto="Je veux en finir avec la vie")
+    d = verdict(conforme=False)
+    d.detresse = True
+    monkeypatch.setattr(activites, "verifier_motto", lambda c, **kw: d)
+    tourner(st, p, "suiv_motto_redaction")
+    assert etat(st).ecran == "motto_feedback" and "3114" in st.textes("warning")
+    tourner(st, p, "suiv_motto_feedback")              # ouvre le pop-up (motto non conforme)
+    etat(st).alerte_motto = True
+    tourner(st, p, "alerte_continuer")
+    assert etat(st).ecran == "motto_final" and "3114" not in st.textes("warning")

@@ -84,12 +84,17 @@ ECRANS_AVEC_SAISIE = {"raisons_image", "mots_complementaires", "reflexion", "sou
 # Les écrans du motto n'en font pas partie : la vérification du motto renvoie déjà ce drapeau.
 ECRANS_LUS = ("raisons_image", "mots_complementaires", "reflexion", "souhait", "aide_libres", "mouvements_libres")
 
+# Seules ces activités lèvent le signal de détresse : elles lisent la saisie qui vient d'être écrite.
+# Les générations (phrases, aide-mémoire, mouvements) ne relisent que des textes déjà lus plus tôt : leur signaler
+# la même détresse ferait réapparaître le message sur les écrans suivants.
+ACTIVITES_QUI_SIGNALENT = ("lecture_saisie", "verification_motto")
+
 _config: llm.Config | None = None      # fixée par executer()
 
 
 # ----------------------------------------------------------------------------- état
 def _defauts() -> dict:
-    d = {"ecran": ORDRE[0], "image_id": None, "detresse_ia": False,
+    d = {"ecran": ORDRE[0], "image_id": None, "detresse_ia": False, "detresse_sur": "",
          "res_phrases": None, "sig_phrases": None,
          "motto": "", "res_verdict": None, "version_amelio": 0,
          "res_aide": None, "sig_aide": None, "res_mouv": None, "sig_mouv": None,
@@ -184,11 +189,19 @@ def selection_courante() -> list[str]:
     return sortie
 
 
+# Préfixes des champs libres de chaque écran (le filet de mots-clés ne regarde que l'écran affiché).
+CHAMPS_DE_L_ECRAN = {
+    "raisons_image": ("w_raisons",), "mots_complementaires": ("w_mots_libres_",), "reflexion": ("w_reflexion",),
+    "souhait": ("w_souhait",), "motto_redaction": ("w_motto_saisie", "w_comp_"), "motto_feedback": ("w_amelio_",),
+    "aide_libres": ("w_libre_aide_",), "mouvements_libres": ("w_libre_mouv_",)}
+
+
 def textes_libres() -> list[str]:
-    cles = [k for k in S.keys() if k.startswith(("w_raisons", "w_reflexion", "w_souhait", "w_motto_saisie",
-                                                   "w_sociales", "w_mots_libres_", "w_amelio_", "w_comp_",
-                                                   "w_libre_aide_", "w_libre_mouv_"))]
-    return [str(S[k]) for k in cles if isinstance(S[k], str)] + [S.motto]
+    """Textes saisis sur l'écran affiché (et, sur le retour du motto, le motto soumis)."""
+    prefixes = CHAMPS_DE_L_ECRAN.get(S.ecran, ())
+    cles = [k for k in S.keys() if k.startswith(prefixes) and not k.startswith(("w_libre_aide_type_", "w_libre_mouv_type_"))]
+    textes_ecran = [str(S[k]) for k in cles if isinstance(S[k], str)] if prefixes else []
+    return textes_ecran + ([S.motto] if S.ecran == "motto_feedback" else [])
 
 
 # ----------------------------------------------------------------------------- éléments d'affichage
@@ -245,10 +258,21 @@ _detresse_affichee = False       # le message ne s'affiche qu'une fois par exéc
 
 
 def afficher_detresse() -> None:
+    """Message de détresse, uniquement sur l'écran où la saisie l'a fait apparaître.
+
+    - `detresse_ia` : signal levé par une réponse de l'IA ; il s'attache au premier écran affiché ensuite
+      (l'écran du clic, ou celui où l'on arrive, comme la page de retour du motto) ;
+    - dès que l'on quitte cet écran, le signal est effacé : le message ne suit pas la personne ;
+    - le filet de mots-clés ne regarde que les champs de l'écran affiché.
+    """
     global _detresse_affichee
-    if _detresse_affichee:
+    if S.detresse_ia and not S.detresse_sur:
+        S.detresse_sur = S.ecran
+    if S.detresse_sur and S.detresse_sur != S.ecran:
+        S.detresse_ia, S.detresse_sur = False, ""
+    if _detresse_affichee or S.ecran not in ECRANS_AVEC_SAISIE:
         return
-    if S.ecran in ECRANS_AVEC_SAISIE and (S.detresse_ia or checks.detecter_detresse(*textes_libres())):
+    if S.detresse_ia or checks.detecter_detresse(*textes_libres()):
         st.warning(textes.DETRESSE)
         _detresse_affichee = True
 
@@ -287,7 +311,7 @@ def appel(libelle: str, fonction, **kwargs):
     except llm.LLMError as e:
         log.warning("echec activite=%s : %s", getattr(fonction, "__name__", "?"), e)
         return None, str(e)
-    if res.detresse:
+    if res.detresse and res.activite in ACTIVITES_QUI_SIGNALENT:
         S.detresse_ia = True
     if res.alertes:
         log.info("activite=%s alertes=%s", res.activite, res.alertes)
